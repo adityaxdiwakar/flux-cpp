@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cpr/cpr.h>
+#include "session.h"
 
 int main() {
   std::cout << "Starting request..." << std::endl;
@@ -13,6 +14,9 @@ int main() {
     std::cout << '\t' << kv.first << ':' << kv.second << '\n';
   }
   std::cout << "\n" << "Text: " << r.text << '\n';
+
+  auto session = AmeritradeSession("refresh", "consumer_key", "root_url");
+  std::cout << session << endl;
 
   return 0;
 }

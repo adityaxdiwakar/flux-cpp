@@ -3,9 +3,17 @@ project(fluxcpp)
 
 set(CMAKE_CXX_STANDARD 20)
 
-set(CPP_FILES "${PROJECT_SOURCE_DIR}/src/flux.cc")
+set(CPP_FILES 
+    src/flux.cc
+    src/session.cc
+)
 
-add_executable(fluxcpp ${CPP_FILES})
+set(HEADER_FILES,
+    include/session.h
+)
+
+add_executable(fluxcpp ${CPP_FILES} ${HEADER_FILES})
+target_include_directories(fluxcpp PRIVATE include/)
 
 include(FetchContent)
 FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git
