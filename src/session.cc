@@ -1,6 +1,7 @@
 #include <string>
 #include <iostream>
 #include <format>
+#include "cpr/cpr.h"
 
 #include "session.hpp"
 #include "auth.hpp"
@@ -22,13 +23,15 @@ ostream& operator<<(ostream &os, const AmeritradeSession& s) {
 }
 
 void AmeritradeSession::get_access_token() {
-  auto payload = access_token_struct{
-    .grant_type="refresh_token",
-    .refresh_token=refresh,
-    .client_id=consumer_key + string("@AMER.OAUTHMAP"),
-    .redirect_uri=string("http://127.0.0.1"),
+  auto req_params = cpr::Parameters{
+    {"grant_type", gt_refresh_token},
+    {"refresh_token", refresh},
+    {"client_id", consumer_key + "@AMER.OAUTHMAP"},
+    {"redirect_uri", "http://127.0.0.1"}
   };
 
-  nlohmann::json j = payload; // implicit json conversion
-  cout << j << endl;
+  cpr::Response r = cpr::Get(cpr::Url{root_url + "oauth2/token"}, req_params);
+
+  std::cout << r.url << std::endl;
+  std::cout << r.text << std::endl;
 }
