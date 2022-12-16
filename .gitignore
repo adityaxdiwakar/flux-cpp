@@ -37,6 +37,8 @@ CMakeCache.txt
 cmake_install.cmake
 Makefile
 _deps/
+.cache/
+compile_commands.json
 
 # Binary
 fluxcpp
