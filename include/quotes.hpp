@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "nlohmann/json.hpp"
 
 struct quoted_instrument {
   std::string asset_type;
@@ -51,4 +52,10 @@ struct quoted_instrument {
   double regular_market_percent_change_in_double;
   bool delayed;
   bool realtime_entitled;
+
+  friend void from_json(const nlohmann::json&, quoted_instrument&);
+  friend void to_json(nlohmann::json&, const quoted_instrument&);
 };
+
+void from_json(const nlohmann::json&, std::unordered_map<std::string, quoted_instrument>&);
+void to_json(nlohmann::json&, const std::unordered_map<std::string, quoted_instrument>&);
