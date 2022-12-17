@@ -41,4 +41,9 @@ void AmeritradeSession::get_access_token() {
   };
 
   cpr::Response r = cpr::Post(cpr::Url{root_url + "oauth2/token"}, req_payload);
+
+  nlohmann::json j = nlohmann::json::parse(r.text);
+  auto access_rsp = j.get<oauth_rsp>();
+
+  this->access_token = access_rsp.access_token;
 }

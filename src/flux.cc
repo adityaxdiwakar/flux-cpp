@@ -12,6 +12,7 @@ int main() {
 
   auto session = AmeritradeSession(getenv("REFRESH_TOKEN"), getenv("CONSUMER_KEY"), "https://api.tdameritrade.com/v1/");
   cout << session << endl;
+  session.get_access_token();
 
   return 0;
 }
