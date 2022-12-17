@@ -12,9 +12,12 @@ int main() {
     return -1;
   }
 
-  auto session = AmeritradeSession(getenv("REFRESH_TOKEN"), getenv("CONSUMER_KEY"), "https://api.tdameritrade.com/v1/");
-
+  auto session = AmeritradeSession(
+    getenv("REFRESH_TOKEN"), 
+    getenv("CONSUMER_KEY"), 
+    "https://api.tdameritrade.com/v1/");
   auto q = session.quote_security({"AAPL"});
   cout << (nlohmann::json) q << endl;
+
   return 0;
 }
