@@ -1,5 +1,7 @@
 #include <iostream>
 #include <cpr/cpr.h>
+#include "nlohmann/json.hpp"
+#include "quotes.hpp"
 #include "session.hpp"
 
 using namespace std;
@@ -11,8 +13,8 @@ int main() {
   }
 
   auto session = AmeritradeSession(getenv("REFRESH_TOKEN"), getenv("CONSUMER_KEY"), "https://api.tdameritrade.com/v1/");
-  cout << session << endl;
-  session.get_access_token();
 
+  auto q = session.quote_security({"AAPL"});
+  cout << (nlohmann::json) q << endl;
   return 0;
 }

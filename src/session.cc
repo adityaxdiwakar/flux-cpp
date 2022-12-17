@@ -26,8 +26,6 @@ AmeritradeSession::AmeritradeSession(string refresh, string consumer_key, string
   init_access_token();
 }
 
-AmeritradeSession::AmeritradeSession() {}
-
 /**
  * Set a JSON object with the representation of an AmeritradeSession.
  *
@@ -69,6 +67,8 @@ void AmeritradeSession::init_access_token() {
 
   cpr::Response r = cpr::Post(cpr::Url{root_url + "oauth2/token"}, req_payload);
 
+  /* TODO: handle errors such as 400, 401, etc. */
+
   nlohmann::json j = nlohmann::json::parse(r.text);
   auto access_rsp = j.get<oauth_rsp>();
 
@@ -90,10 +90,55 @@ string AmeritradeSession::get_access_token() {
   return access_token;
 }
 
+/**
+ * Quote a basket of securities.
+ *
+ * This function will make a request to TDAmeritrade to quote a basket of
+ * securities and will return an unordered_map mapping tickers to quote
+ * structs as defined in include/quotes.hpp.
+ *
+ * @param an initializer_list of securities to quote
+ * @return an unordered_map mapping tickers to quote structs
+ */
 unordered_map<string, quoted_instrument> AmeritradeSession::quote_securities(initializer_list<std::string_view> securities) {
-  return unordered_map<string, quoted_instrument>();
+  string ss = "";
+  for (auto ticker : securities) {
+    ss += ticker;
+    ss += ',';
+  }
+  ss.pop_back();
+
+  transform(ss.begin(), ss.end(), ss.begin(), ::toupper);
+  auto req_params = cpr::Parameters{
+    {"symbol", ss},
+  };
+
+  cpr::Response r = cpr::Get(
+    cpr::Url{root_url + "marketdata/quotes"}, 
+    cpr::Bearer{this->access_token},
+    req_params);
+
+  /* TODO: handle errors such as 400, 401, etc. */
+
+  nlohmann::json j = nlohmann::json::parse(r.text);
+  return j.get<unordered_map<string, quoted_instrument>>();
 }
 
+/**
+ * Quote a single security.
+ *
+ * This function calls AmeritradeSession::quote_securities with a single
+ * security and indexes the unordered_map with the requested ticker to only
+ * run a single quote struct.
+ *
+ * @param a single ticker to quote
+ * @return a quote struct for the quote
+ */
 quoted_instrument AmeritradeSession::quote_security(string security) {
-  return quoted_instrument{};
+  auto s = this->quote_securities({security});
+
+  /* TODO: handle chance of ticker not being in unordered_map */
+
+  transform(security.begin(), security.end(), security.begin(), ::toupper);
+  return s[security];
 }

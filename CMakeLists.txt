@@ -7,10 +7,13 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CPP_FILES 
     src/flux.cc
     src/session.cc
+    src/quotes.cc
 )
 
 set(HEADER_FILES,
-    include/session.h
+    include/session.hpp
+    include/quotes.hpp
+    include/auth.hpp
 )
 
 add_executable(fluxcpp ${CPP_FILES} ${HEADER_FILES})
