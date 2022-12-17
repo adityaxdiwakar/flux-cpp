@@ -4,11 +4,6 @@
 #include "quotes.hpp"
 #pragma once
 
-enum request_type {
-  GET,
-  POST
-};
-
 class AmeritradeSession {
   private:
     std::string refresh;
@@ -29,4 +24,25 @@ class AmeritradeSession {
     // quoting methods 
     std::unordered_map<std::string, quoted_instrument> quote_securities(std::initializer_list<std::string_view>);
     quoted_instrument quote_security(std::string);
+};
+
+/**
+ * Custom exception type for API errors.
+ */
+class ApiException : public std::exception {
+  private:
+    int status_code;
+
+  public: 
+    ApiException(int code);
+    int get_code();
+};
+
+
+enum api_errors {
+  API_BAD_REQUEST = 400,
+  API_UNAUTHD = 401,
+  API_FORBIDDEN = 403,
+  API_NOT_FOUND = 404,
+  API_MISC_QUERY = 406
 };

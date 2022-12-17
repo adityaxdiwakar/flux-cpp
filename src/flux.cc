@@ -16,7 +16,7 @@ int main() {
     getenv("REFRESH_TOKEN"), 
     getenv("CONSUMER_KEY"), 
     "https://api.tdameritrade.com/v1/");
-  auto q = session.quote_security({"AAPL"});
+  auto q = session.quote_securities({"AAPL"});
   cout << (nlohmann::json) q << endl;
 
   return 0;

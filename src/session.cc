@@ -12,6 +12,20 @@
 using namespace std;
 
 /**
+ * Construct a custom ApiException with a status code.
+ *
+ * @param a status code to represent the error
+ */
+ApiException::ApiException(int code) : status_code(code) {}
+
+/**
+ * A getter method to retrieve the status code from an exception.
+ *
+ * @return the status code associated with the exception
+ */
+int ApiException::get_code() { return status_code; }
+
+/**
  * Construct an AmeritradeSession with neccesary information to initialize.
  *
  * @param a refresh token to generate access tokens
@@ -67,7 +81,8 @@ void AmeritradeSession::init_access_token() {
 
   cpr::Response r = cpr::Post(cpr::Url{root_url + "oauth2/token"}, req_payload);
 
-  /* TODO: handle errors such as 400, 401, etc. */
+  if (r.status_code != 200) 
+    throw ApiException(r.status_code);
 
   nlohmann::json j = nlohmann::json::parse(r.text);
   auto access_rsp = j.get<oauth_rsp>();
@@ -118,9 +133,12 @@ unordered_map<string, quoted_instrument> AmeritradeSession::quote_securities(ini
     cpr::Bearer{this->access_token},
     req_params);
 
-  /* TODO: handle errors such as 400, 401, etc. */
+  if (r.status_code != 200) throw ApiException(r.status_code);
 
   nlohmann::json j = nlohmann::json::parse(r.text);
+  auto rsp = j.get<unordered_map<string, quoted_instrument>>();
+  if (!rsp.size()) throw ApiException(API_NOT_FOUND);
+
   return j.get<unordered_map<string, quoted_instrument>>();
 }
 
@@ -137,8 +155,9 @@ unordered_map<string, quoted_instrument> AmeritradeSession::quote_securities(ini
 quoted_instrument AmeritradeSession::quote_security(string security) {
   auto s = this->quote_securities({security});
 
-  /* TODO: handle chance of ticker not being in unordered_map */
-
   transform(security.begin(), security.end(), security.begin(), ::toupper);
+
+  if (s.find(security) == s.end()) throw ApiException(API_NOT_FOUND);
+
   return s[security];
 }
