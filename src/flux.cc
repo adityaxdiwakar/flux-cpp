@@ -5,9 +5,12 @@
 using namespace std;
 
 int main() {
-  auto session = AmeritradeSession("refresh", "consumer_key", "https://api.tdameritrade.com/v1/");
-  cout << session << endl;
+  if (!getenv("REFRESH_TOKEN") || !getenv("CONSUMER_KEY")) {
+    cout << "error: both REFRESH_TOKEN and CONSUMER_KEY env must be set" << endl;
+    return -1;
+  }
 
+  auto session = AmeritradeSession(getenv("REFRESH_TOKEN"), getenv("CONSUMER_KEY"), "https://api.tdameritrade.com/v1/");
   session.get_access_token();
 
   return 0;
