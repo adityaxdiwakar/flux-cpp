@@ -23,15 +23,12 @@ ostream& operator<<(ostream &os, const AmeritradeSession& s) {
 }
 
 void AmeritradeSession::get_access_token() {
-  auto req_params = cpr::Parameters{
+  auto req_payload = cpr::Payload{
     {"grant_type", gt_refresh_token},
     {"refresh_token", refresh},
     {"client_id", consumer_key + "@AMER.OAUTHMAP"},
     {"redirect_uri", "http://127.0.0.1"}
   };
 
-  cpr::Response r = cpr::Get(cpr::Url{root_url + "oauth2/token"}, req_params);
-
-  std::cout << r.url << std::endl;
-  std::cout << r.text << std::endl;
+  cpr::Response r = cpr::Post(cpr::Url{root_url + "oauth2/token"}, req_payload);
 }
