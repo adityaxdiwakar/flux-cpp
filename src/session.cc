@@ -4,6 +4,7 @@
 
 #include "session.hpp"
 #include "auth.hpp"
+#include "quotes.hpp"
 
 #include "cpr/cpr.h"
 #include "nlohmann/json.hpp"
@@ -87,4 +88,12 @@ void AmeritradeSession::init_access_token() {
 string AmeritradeSession::get_access_token() {
   init_access_token();
   return access_token;
+}
+
+unordered_map<string, quoted_instrument> AmeritradeSession::quote_securities(initializer_list<std::string_view> securities) {
+  return unordered_map<string, quoted_instrument>();
+}
+
+quoted_instrument AmeritradeSession::quote_security(string security) {
+  return quoted_instrument{};
 }
