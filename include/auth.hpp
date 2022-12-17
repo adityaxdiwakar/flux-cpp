@@ -10,5 +10,5 @@ struct oauth_rsp {
   std::string token_type;
   int expires_in;
 
-  NLOHMANN_DEFINE_TYPE_INTRUSIVE_WITH_DEFAULT(oauth_rsp, access_token, scope, token_type, expires_in);
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(oauth_rsp, access_token, scope, token_type, expires_in);
 };
