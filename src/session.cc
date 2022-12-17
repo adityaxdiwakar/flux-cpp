@@ -1,10 +1,12 @@
 #include <string>
 #include <iostream>
 #include <format>
-#include "cpr/cpr.h"
 
 #include "session.hpp"
 #include "auth.hpp"
+
+#include "cpr/cpr.h"
+#include "nlohmann/json.hpp"
 
 using namespace std;
 
@@ -13,11 +15,19 @@ AmeritradeSession::AmeritradeSession(string refresh, string consumer_key, string
     consumer_key(consumer_key),
     root_url(root_url) {}
 
+AmeritradeSession::AmeritradeSession() {}
+
+void to_json(nlohmann::json& j, const AmeritradeSession& s) {
+  j = nlohmann::json {
+    {"refresh", s.refresh},
+    {"consumer_key", s.consumer_key},
+    {"root_url", s.root_url}
+  };
+}
+
 ostream& operator<<(ostream &os, const AmeritradeSession& s) {
-  cout << "{refresh: " << s.refresh;
-  cout << ", consumer: " << s.consumer_key;
-  cout << ", root_url: " << s.root_url;
-  cout << "}";
+  nlohmann::json j = s;
+  cout << j;
 
   return os;
 }
