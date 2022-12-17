@@ -26,8 +26,7 @@ void to_json(nlohmann::json& j, const AmeritradeSession& s) {
 }
 
 ostream& operator<<(ostream &os, const AmeritradeSession& s) {
-  nlohmann::json j = s;
-  cout << j;
+  cout << (nlohmann::json) s;
 
   return os;
 }
