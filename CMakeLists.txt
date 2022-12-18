@@ -9,6 +9,7 @@ set(CPP_FILES
     src/session.cc
     src/quotes.cc
     src/instruments.cc
+    src/fundamentals.cc
 )
 
 set(HEADER_FILES,
