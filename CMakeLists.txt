@@ -17,6 +17,7 @@ set(HEADER_FILES,
     include/quotes.hpp
     include/auth.hpp
     include/instruments.hpp
+    include/markethours.hpp
 )
 
 add_executable(fluxcpp ${CPP_FILES} ${HEADER_FILES})
