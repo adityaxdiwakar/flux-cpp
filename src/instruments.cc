@@ -10,6 +10,7 @@ void from_json(const nlohmann::json& j, instrument& i) {
   j.at("exchange").get_to(i.exchange);
 
   if (j.count("cusip")) i.cusip = j.at("cusip").get<string>();
+  if (j.count("fundamental")) i.fundamentals = j.at("fundamental").get<fundamentals>();
 }
 
 void to_json(nlohmann::json& j, const instrument& i) {
@@ -21,6 +22,7 @@ void to_json(nlohmann::json& j, const instrument& i) {
   };
   
   if (i.cusip != std::nullopt) j["cusip"] = i.cusip.value();
+  if (i.fundamentals != std::nullopt) j["fundamental"] = i.fundamentals.value();
 }
 
 void to_json(nlohmann::json& j, const unordered_map<string, instrument>& q) {
