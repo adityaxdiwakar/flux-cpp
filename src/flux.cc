@@ -17,7 +17,8 @@ int main() {
     getenv("CONSUMER_KEY"), 
     "https://api.tdameritrade.com/v1/");
   auto q = session.quote_securities({"AAPL"});
-  cout << (nlohmann::json) q << endl;
+  auto search = session.search_instrument("Apple", search_type::INSTRUMENT_DESC_SEARCH);
 
+  cout << (nlohmann::json) search << endl;
   return 0;
 }

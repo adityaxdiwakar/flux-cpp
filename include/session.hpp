@@ -2,6 +2,7 @@
 #include <nlohmann/json.hpp>
 #include "cpr/cpr.h"
 #include "quotes.hpp"
+#include "instruments.hpp"
 #pragma once
 
 class AmeritradeSession {
@@ -13,10 +14,10 @@ class AmeritradeSession {
     void init_access_token();
 
   public:
-    AmeritradeSession(std::string refresh, std::string consumer_key, std::string root_url);
+    AmeritradeSession(std::string, std::string, std::string);
     AmeritradeSession();
-    friend std::ostream& operator<<(std::ostream &os, const  AmeritradeSession& s);
-    friend void to_json(nlohmann::json& j, const AmeritradeSession& s);
+    friend std::ostream& operator<<(std::ostream&, const  AmeritradeSession&);
+    friend void to_json(nlohmann::json&, const AmeritradeSession&);
 
     // access token methods
     std::string get_access_token();
@@ -24,6 +25,9 @@ class AmeritradeSession {
     // quoting methods 
     std::unordered_map<std::string, quoted_instrument> quote_securities(std::initializer_list<std::string_view>);
     quoted_instrument quote_security(std::string);
+
+    // search methods
+    std::unordered_map<std::string, instrument> search_instrument(std::string, search_type);
 };
 
 /**
@@ -37,7 +41,6 @@ class ApiException : public std::exception {
     ApiException(int code);
     int get_code();
 };
-
 
 enum api_errors {
   API_BAD_REQUEST = 400,

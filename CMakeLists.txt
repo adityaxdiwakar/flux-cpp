@@ -8,12 +8,14 @@ set(CPP_FILES
     src/flux.cc
     src/session.cc
     src/quotes.cc
+    src/instruments.cc
 )
 
 set(HEADER_FILES,
     include/session.hpp
     include/quotes.hpp
     include/auth.hpp
+    include/instruments.hpp
 )
 
 add_executable(fluxcpp ${CPP_FILES} ${HEADER_FILES})

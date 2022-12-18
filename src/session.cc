@@ -5,6 +5,7 @@
 #include "session.hpp"
 #include "auth.hpp"
 #include "quotes.hpp"
+#include "instruments.hpp"
 
 #include "cpr/cpr.h"
 #include "nlohmann/json.hpp"
@@ -136,9 +137,6 @@ unordered_map<string, quoted_instrument> AmeritradeSession::quote_securities(ini
   if (r.status_code != 200) throw ApiException(r.status_code);
 
   nlohmann::json j = nlohmann::json::parse(r.text);
-  auto rsp = j.get<unordered_map<string, quoted_instrument>>();
-  if (!rsp.size()) throw ApiException(API_NOT_FOUND);
-
   return j.get<unordered_map<string, quoted_instrument>>();
 }
 
@@ -160,4 +158,30 @@ quoted_instrument AmeritradeSession::quote_security(string security) {
   if (s.find(security) == s.end()) throw ApiException(API_NOT_FOUND);
 
   return s[security];
+}
+
+/**
+ * Search for instruments through the API.
+ *
+ * This function searches for instruments through the API through one of
+ * four different search types (search_type).
+ *
+ * @param the search parameter
+ * @param the type of search to conduct (search_type)
+ */
+unordered_map<string, instrument> AmeritradeSession::search_instrument(string query, search_type type) {
+  auto req_params = cpr::Parameters{
+    {"symbol", query},
+    {"projection", search_type_str(type)},
+  };
+
+  cpr::Response r = cpr::Get(
+    cpr::Url{root_url + "instruments"}, 
+    cpr::Bearer{this->access_token},
+    req_params);
+
+  if (r.status_code != 200) throw ApiException(r.status_code);
+
+  nlohmann::json j = nlohmann::json::parse(r.text);
+  return j.get<unordered_map<string, instrument>>();
 }
