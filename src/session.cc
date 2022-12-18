@@ -58,6 +58,8 @@ void to_json(nlohmann::json& j, const AmeritradeSession& s) {
 /**
  * Overload stream operator to print out an AmeritradeSession.
  *
+ * @param a stream object
+ * @param an AmeritradeSession object to represent
  * @return a stream object with AmeritradeSession added
  */
 ostream& operator<<(ostream &os, const AmeritradeSession& s) {
@@ -168,6 +170,7 @@ quoted_instrument AmeritradeSession::quote_security(string security) {
  *
  * @param the search parameter
  * @param the type of search to conduct (search_type)
+ * @return a mapping from tickers to searched instruments (without fundamentals)
  */
 unordered_map<string, instrument> AmeritradeSession::search_instrument(string query, search_type type) {
   auto req_params = cpr::Parameters{
@@ -184,4 +187,35 @@ unordered_map<string, instrument> AmeritradeSession::search_instrument(string qu
 
   nlohmann::json j = nlohmann::json::parse(r.text);
   return j.get<unordered_map<string, instrument>>();
+}
+
+/**
+ * Search for instrument fundamentals through the API.
+ *
+ * This function searches for instrument fundmanetals through the API through
+ * a single symbol search term.
+ *
+ * @param the symbol parameter
+ * @return an instrument struct including fundamentals data
+ */
+instrument AmeritradeSession::get_fundamentals(string ticker) {
+  transform(ticker.begin(), ticker.end(), ticker.begin(), ::toupper);
+
+  auto req_params = cpr::Parameters{
+    {"symbol", ticker},
+    {"projection", "fundamental"}
+  };
+
+  cpr::Response r = cpr::Get(
+    cpr::Url{root_url + "instruments"}, 
+    cpr::Bearer{this->access_token},
+    req_params);
+
+  if (r.status_code != 200) throw ApiException(r.status_code);
+
+  nlohmann::json j = nlohmann::json::parse(r.text);
+  auto s = j.get<unordered_map<string, instrument>>();
+  if (s.find(ticker) == s.end()) throw ApiException(API_NOT_FOUND);
+
+  return s[ticker];
 }

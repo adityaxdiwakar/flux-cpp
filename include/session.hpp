@@ -28,6 +28,7 @@ class AmeritradeSession {
 
     // search methods
     std::unordered_map<std::string, instrument> search_instrument(std::string, search_type);
+    instrument get_fundamentals(std::string);
 };
 
 /**
