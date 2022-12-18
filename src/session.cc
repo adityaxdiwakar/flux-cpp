@@ -58,6 +58,8 @@ void to_json(nlohmann::json& j, const AmeritradeSession& s) {
 /**
  * Overload stream operator to print out an AmeritradeSession.
  *
+ * @param a stream object
+ * @param an AmeritradeSession object to represent
  * @return a stream object with AmeritradeSession added
  */
 ostream& operator<<(ostream &os, const AmeritradeSession& s) {
@@ -168,6 +170,7 @@ quoted_instrument AmeritradeSession::quote_security(string security) {
  *
  * @param the search parameter
  * @param the type of search to conduct (search_type)
+ * @return a mapping from tickers to searched instruments (without fundamentals)
  */
 unordered_map<string, instrument> AmeritradeSession::search_instrument(string query, search_type type) {
   auto req_params = cpr::Parameters{
