@@ -1,7 +1,6 @@
 #include <string>
 #include <vector>
-
-using hours_rsp_type = std::unordered_map<std::string, unordered_map<std::string, market_hours>>;
+#include <unordered_map>
 
 struct market_times {
   std::string start;
@@ -24,3 +23,5 @@ struct market_hours {
   bool is_open;
   session_hours session_hours;
 };
+
+using hours_rsp_type = std::unordered_map<std::string, std::unordered_map<std::string, market_hours>>;
