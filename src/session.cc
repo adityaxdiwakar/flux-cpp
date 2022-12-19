@@ -219,3 +219,49 @@ instrument AmeritradeSession::get_fundamentals(string ticker) {
 
   return s[ticker];
 }
+
+/**
+ * Return market hours for specified markets.
+ *
+ * This function returns market hours returned by the API for the markets
+ * specified on the date provided.
+ *
+ * @param a list of markets to get hours for
+ * @param a date to get pre, regular, and post market hours for
+ * @return a market_hours_rsp struct
+ */
+markets_hours AmeritradeSession::get_market_hours(vector<market_type> markets, string date) {
+  // convert the markets to strings
+  vector<string> markets_str;
+  for (auto& market : markets)
+    markets_str.emplace_back(get_str(market));
+
+  // capitalize all the markets for parameters
+  for (auto& market_str : markets_str)
+    transform(market_str.begin(), market_str.end(), market_str.begin(), ::toupper);
+
+  // implode the vector of strings with a comma
+  string ss = "";
+  for (auto market : markets_str) {
+    ss += market;
+    ss += ',';
+  }
+  ss.pop_back();
+
+  auto req_params = cpr::Parameters{
+    {"markets", ss},
+    {"date", date}
+  };
+
+  cpr::Response r = cpr::Get(
+    cpr::Url{root_url + "marketdata/hours"}, 
+    cpr::Bearer{this->access_token},
+    req_params);
+
+  cout << r.text << endl;
+
+  if (r.status_code != 200) throw ApiException(r.status_code);
+
+  nlohmann::json j = nlohmann::json::parse(r.text);
+  return j.get<markets_hours>();
+}
