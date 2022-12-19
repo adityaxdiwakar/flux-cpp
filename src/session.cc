@@ -39,9 +39,9 @@ AmeritradeSession::AmeritradeSession(
     string refresh, 
     string consumer_key, 
     string root_url) 
-  : refresh_(refresh),
-    consumer_key_(consumer_key),
-    root_url_(root_url) {
+  : refresh_(refresh)
+  , consumer_key_(consumer_key)
+  , root_url_(root_url) {
 
   this->init_access_token_();
 }
@@ -59,10 +59,10 @@ AmeritradeSession::AmeritradeSession(
     string consumer_key, 
     string root_url,
     string token_file) 
-  : refresh_(refresh),
-    consumer_key_(consumer_key),
-    root_url_(root_url),
-    token_file_(token_file) {
+  : refresh_(refresh)
+  , consumer_key_(consumer_key)
+  , root_url_(root_url)
+  , token_file_(token_file) {
 
   this->init_access_token_();
 }
