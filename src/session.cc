@@ -96,7 +96,7 @@ ostream& operator<<(ostream &os, const AmeritradeSession& s) {
  * a token if the token has expired.
  */
 void AmeritradeSession::init_access_token_() {
-  auto req_payload = cpr::Payload{
+  cpr::Payload req_payload = {
     {"grant_type", gt_refresh_token},
     {"refresh_token", refresh_},
     {"client_id", consumer_key_ + "@AMER.OAUTHMAP"},
@@ -196,7 +196,7 @@ quoted_instrument AmeritradeSession::quote_security(string security) {
  * @return a mapping from tickers to searched instruments (without fundamentals)
  */
 unordered_map<string, instrument> AmeritradeSession::search_instrument(string query, search_type type) {
-  auto req_params = cpr::Parameters{
+  cpr::Parameters req_params = {
     {"symbol", query},
     {"projection", search_type_str(type)},
   };
@@ -224,7 +224,7 @@ unordered_map<string, instrument> AmeritradeSession::search_instrument(string qu
 instrument AmeritradeSession::get_fundamentals(string ticker) {
   transform(ticker.begin(), ticker.end(), ticker.begin(), ::toupper);
 
-  auto req_params = cpr::Parameters{
+  cpr::Parameters req_params = {
     {"symbol", ticker},
     {"projection", "fundamental"}
   };
@@ -274,7 +274,7 @@ markets_hours AmeritradeSession::get_market_hours(vector<market_type> markets, s
   }
   ss.pop_back();
 
-  auto req_params = cpr::Parameters{
+  cpr::Parameters req_params = {
     {"markets", ss},
     {"date", date}
   };
