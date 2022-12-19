@@ -258,8 +258,6 @@ markets_hours AmeritradeSession::get_market_hours(vector<market_type> markets, s
     cpr::Bearer{this->access_token},
     req_params);
 
-  cout << r.text << endl;
-
   if (r.status_code != 200) throw ApiException(r.status_code);
 
   nlohmann::json j = nlohmann::json::parse(r.text);
