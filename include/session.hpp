@@ -4,6 +4,7 @@
 #include "quotes.hpp"
 #include "instruments.hpp"
 #include "markethours.hpp"
+#include "movers.hpp"
 #pragma once
 
 class AmeritradeSession {
@@ -36,8 +37,11 @@ class AmeritradeSession {
     std::unordered_map<std::string, instrument> search_instrument(std::string, search_type);
     instrument get_fundamentals(std::string);
 
-    // market hours
+    // market hour method
     markets_hours get_market_hours(std::vector<market_type>, std::string);
+    
+    // movers method
+    std::vector<mover> get_movers(enum index, enum direction, enum change_metric);
 };
 
 /**

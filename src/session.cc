@@ -7,6 +7,7 @@
 #include "session.hpp"
 #include "auth.hpp"
 #include "quotes.hpp"
+#include "movers.hpp"
 #include "instruments.hpp"
 
 #include "cpr/cpr.h"
@@ -358,4 +359,32 @@ markets_hours AmeritradeSession::get_market_hours(vector<market_type> markets, s
 
   nlohmann::json j = nlohmann::json::parse(r.text);
   return j.get<markets_hours>();
+}
+
+/**
+ * Return the top movers of an index for either direction of either value or
+ * percentage.
+ *
+ * @param index to get the top movers from
+ * @param direction (direction::UP or direction::DOWN) for movers
+ * @param whether to get movers by percent of raw value
+ */
+vector<mover> AmeritradeSession::get_movers(enum index i, enum direction d, enum change_metric c) {
+  string d_str = i == index::COMPX ? "$COMPX" : (i == index::SPX ? "$SPX.X" : "$DJI");
+
+  cpr::Parameters req_params = {
+    {"direction", d == direction::UP ? "up" : "down"},
+    {"change", c == change_metric::RAW ? "value" : "percent"},
+  };
+
+  string idx_str = i == index::COMPX ? "$COMPX" : (i == index::SPX ? "$SPX.X" : "$DJI");
+  cpr::Response r = cpr::Get(
+    cpr::Url{root_url_ + "marketdata/" + idx_str + "/movers"}, 
+    cpr::Bearer{this->access_token_},
+    req_params);
+
+  if (r.status_code != 200) throw ApiException(r.status_code);
+
+  nlohmann::json j = nlohmann::json::parse(r.text);
+  return j.get<vector<mover>>();
 }

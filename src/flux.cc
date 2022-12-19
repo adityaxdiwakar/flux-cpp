@@ -19,6 +19,11 @@ int main() {
     "https://api.tdameritrade.com/v1/",
     "token.dat");
 
-  cout << (nlohmann::json) session << endl;
+  auto movers_spx = session.get_movers(
+    index::SPX, 
+    direction::UP, 
+    change_metric::PERCENT);
+
+  cout << (nlohmann::json) movers_spx << endl;
   return 0;
 }
