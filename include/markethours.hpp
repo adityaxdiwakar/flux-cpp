@@ -47,11 +47,13 @@ struct market_hours {
   friend void to_json(nlohmann::json&, const market_hours&);
 };
 
-using singled_hours_rsp_t = std::unordered_map<std::string, market_hours>;
-void from_json(const nlohmann::json& j, singled_hours_rsp_t&);
-void to_json(nlohmann::json& j, const singled_hours_rsp_t&);
+struct markets_hours {
+  std::optional<std::unordered_map<std::string, market_hours>> equity;
+  std::optional<std::unordered_map<std::string, market_hours>> option;
+  std::optional<std::unordered_map<std::string, market_hours>> future;
+  std::optional<std::unordered_map<std::string, market_hours>> forex;
+  std::optional<std::unordered_map<std::string, market_hours>> bond;
 
-using hours_rsp_type = std::unordered_map<market_type, singled_hours_rsp_t>;
-void from_json(const nlohmann::json&, hours_rsp_type&);
-void to_json(nlohmann::json&, const hours_rsp_type&);
-
+  friend void from_json(const nlohmann::json&, markets_hours&);
+  friend void to_json(nlohmann::json&, const markets_hours&);
+};
