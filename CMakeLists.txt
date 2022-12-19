@@ -10,6 +10,7 @@ set(CPP_FILES
     src/quotes.cc
     src/instruments.cc
     src/fundamentals.cc
+    src/markethours.cc
 )
 
 set(HEADER_FILES,
