@@ -182,7 +182,6 @@ void AmeritradeSession::write_access_token_() {
   ofstream f;
   f.open(this->token_file_.value());
   if (!f.is_open()) return;
-  cout << "writing access token " << this->access_token_ << endl;
   f << this->access_token_;
   f.close();
 }
