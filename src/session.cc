@@ -37,11 +37,29 @@ AmeritradeSession::AmeritradeSession(
     string refresh, 
     string consumer_key, 
     string root_url) 
-  : refresh(refresh),
-    consumer_key(consumer_key),
-    root_url(root_url) {
+  : _refresh(refresh),
+    _consumer_key(consumer_key),
+    _root_url(root_url) {
 
-  init_access_token();
+  this->_init_access_token();
+}
+
+/**
+ * Construct an AmeritradeSession with an access token stat file.
+ *
+ * @param a refresh token to generate access tokens
+ * @param a consumer_key generated from the TDAmeritrade Developer portal
+ * @param a root_url to make an API request (useful for /v1/ or /v2/ in future)
+ * @param an access token file to save generated tokens in and read from
+ */
+AmeritradeSession::AmeritradeSession(
+    string refresh, 
+    string consumer_key, 
+    string root_url,
+    string access_token) 
+  : _access_token(access_token) {
+
+  AmeritradeSession(refresh, consumer_key, root_url);
 }
 
 /**
@@ -52,9 +70,9 @@ AmeritradeSession::AmeritradeSession(
  */
 void to_json(nlohmann::json& j, const AmeritradeSession& s) {
   j = {
-    {"refresh", s.refresh},
-    {"consumer_key", s.consumer_key},
-    {"root_url", s.root_url}
+    {"refresh", s._refresh},
+    {"consumer_key", s._consumer_key},
+    {"root_url", s._root_url}
   };
 }
 
@@ -77,16 +95,16 @@ ostream& operator<<(ostream &os, const AmeritradeSession& s) {
  * session field. TODO: This function only initializes or regenerates
  * a token if the token has expired.
  */
-void AmeritradeSession::init_access_token() {
+void AmeritradeSession::_init_access_token() {
   auto req_payload = cpr::Payload{
     {"grant_type", gt_refresh_token},
-    {"refresh_token", refresh},
-    {"client_id", consumer_key + "@AMER.OAUTHMAP"},
+    {"refresh_token", _refresh},
+    {"client_id", _consumer_key + "@AMER.OAUTHMAP"},
     {"redirect_uri", "http://127.0.0.1"}
   };
 
   cpr::Response r = cpr::Post(
-      cpr::Url{root_url + "oauth2/token"}, 
+      cpr::Url{_root_url + "oauth2/token"}, 
       req_payload);
 
   if (r.status_code != 200) 
@@ -95,7 +113,7 @@ void AmeritradeSession::init_access_token() {
   nlohmann::json j = nlohmann::json::parse(r.text);
   auto access_rsp = j.get<oauth_rsp>();
 
-  this->access_token = access_rsp.access_token;
+  this->_access_token = access_rsp.access_token;
 }
 
 /**
@@ -109,8 +127,8 @@ void AmeritradeSession::init_access_token() {
  * @return a valid TDAmeritrade API access token
  */
 string AmeritradeSession::get_access_token() {
-  init_access_token();
-  return access_token;
+  _init_access_token();
+  return _access_token;
 }
 
 /**
@@ -137,8 +155,8 @@ unordered_map<string, quoted_instrument> AmeritradeSession::quote_securities(ini
   };
 
   cpr::Response r = cpr::Get(
-    cpr::Url{root_url + "marketdata/quotes"}, 
-    cpr::Bearer{this->access_token},
+    cpr::Url{_root_url + "marketdata/quotes"}, 
+    cpr::Bearer{this->_access_token},
     req_params);
 
   if (r.status_code != 200) throw ApiException(r.status_code);
@@ -184,8 +202,8 @@ unordered_map<string, instrument> AmeritradeSession::search_instrument(string qu
   };
 
   cpr::Response r = cpr::Get(
-    cpr::Url{root_url + "instruments"}, 
-    cpr::Bearer{this->access_token},
+    cpr::Url{_root_url + "instruments"}, 
+    cpr::Bearer{this->_access_token},
     req_params);
 
   if (r.status_code != 200) throw ApiException(r.status_code);
@@ -212,8 +230,8 @@ instrument AmeritradeSession::get_fundamentals(string ticker) {
   };
 
   cpr::Response r = cpr::Get(
-    cpr::Url{root_url + "instruments"}, 
-    cpr::Bearer{this->access_token},
+    cpr::Url{_root_url + "instruments"}, 
+    cpr::Bearer{this->_access_token},
     req_params);
 
   if (r.status_code != 200) throw ApiException(r.status_code);
@@ -262,8 +280,8 @@ markets_hours AmeritradeSession::get_market_hours(vector<market_type> markets, s
   };
 
   cpr::Response r = cpr::Get(
-    cpr::Url{root_url + "marketdata/hours"}, 
-    cpr::Bearer{this->access_token},
+    cpr::Url{_root_url + "marketdata/hours"}, 
+    cpr::Bearer{this->_access_token},
     req_params);
 
   if (r.status_code != 200) throw ApiException(r.status_code);
