@@ -8,12 +8,12 @@
 
 class AmeritradeSession {
   private:
-    std::string _refresh;
-    std::string _consumer_key;
-    std::string _root_url;
-    std::string _access_token;
-    std::optional<std::string> _token_file;
-    void _init_access_token();
+    std::string refresh_;
+    std::string consumer_key_;
+    std::string root_url_;
+    std::string access_token_;
+    std::optional<std::string> token_file_;
+    void init_access_token_();
 
   public:
     AmeritradeSession(std::string, std::string, std::string);

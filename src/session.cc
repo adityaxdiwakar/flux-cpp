@@ -37,11 +37,11 @@ AmeritradeSession::AmeritradeSession(
     string refresh, 
     string consumer_key, 
     string root_url) 
-  : _refresh(refresh),
-    _consumer_key(consumer_key),
-    _root_url(root_url) {
+  : refresh_(refresh),
+    consumer_key_(consumer_key),
+    root_url_(root_url) {
 
-  this->_init_access_token();
+  this->init_access_token_();
 }
 
 /**
@@ -57,7 +57,7 @@ AmeritradeSession::AmeritradeSession(
     string consumer_key, 
     string root_url,
     string access_token) 
-  : _access_token(access_token) {
+  : access_token_(access_token) {
 
   AmeritradeSession(refresh, consumer_key, root_url);
 }
@@ -70,9 +70,9 @@ AmeritradeSession::AmeritradeSession(
  */
 void to_json(nlohmann::json& j, const AmeritradeSession& s) {
   j = {
-    {"refresh", s._refresh},
-    {"consumer_key", s._consumer_key},
-    {"root_url", s._root_url}
+    {"refresh", s.refresh_},
+    {"consumer_key", s.consumer_key_},
+    {"root_url", s.root_url_}
   };
 }
 
@@ -95,16 +95,16 @@ ostream& operator<<(ostream &os, const AmeritradeSession& s) {
  * session field. TODO: This function only initializes or regenerates
  * a token if the token has expired.
  */
-void AmeritradeSession::_init_access_token() {
+void AmeritradeSession::init_access_token_() {
   auto req_payload = cpr::Payload{
     {"grant_type", gt_refresh_token},
-    {"refresh_token", _refresh},
-    {"client_id", _consumer_key + "@AMER.OAUTHMAP"},
+    {"refresh_token", refresh_},
+    {"client_id", consumer_key_ + "@AMER.OAUTHMAP"},
     {"redirect_uri", "http://127.0.0.1"}
   };
 
   cpr::Response r = cpr::Post(
-      cpr::Url{_root_url + "oauth2/token"}, 
+      cpr::Url{root_url_ + "oauth2/token"}, 
       req_payload);
 
   if (r.status_code != 200) 
@@ -113,7 +113,7 @@ void AmeritradeSession::_init_access_token() {
   nlohmann::json j = nlohmann::json::parse(r.text);
   auto access_rsp = j.get<oauth_rsp>();
 
-  this->_access_token = access_rsp.access_token;
+  this->access_token_ = access_rsp.access_token;
 }
 
 /**
@@ -127,8 +127,8 @@ void AmeritradeSession::_init_access_token() {
  * @return a valid TDAmeritrade API access token
  */
 string AmeritradeSession::get_access_token() {
-  _init_access_token();
-  return _access_token;
+  init_access_token_();
+  return access_token_;
 }
 
 /**
@@ -155,8 +155,8 @@ unordered_map<string, quoted_instrument> AmeritradeSession::quote_securities(ini
   };
 
   cpr::Response r = cpr::Get(
-    cpr::Url{_root_url + "marketdata/quotes"}, 
-    cpr::Bearer{this->_access_token},
+    cpr::Url{root_url_ + "marketdata/quotes"}, 
+    cpr::Bearer{this->access_token_},
     req_params);
 
   if (r.status_code != 200) throw ApiException(r.status_code);
@@ -202,8 +202,8 @@ unordered_map<string, instrument> AmeritradeSession::search_instrument(string qu
   };
 
   cpr::Response r = cpr::Get(
-    cpr::Url{_root_url + "instruments"}, 
-    cpr::Bearer{this->_access_token},
+    cpr::Url{root_url_ + "instruments"}, 
+    cpr::Bearer{this->access_token_},
     req_params);
 
   if (r.status_code != 200) throw ApiException(r.status_code);
@@ -230,8 +230,8 @@ instrument AmeritradeSession::get_fundamentals(string ticker) {
   };
 
   cpr::Response r = cpr::Get(
-    cpr::Url{_root_url + "instruments"}, 
-    cpr::Bearer{this->_access_token},
+    cpr::Url{root_url_ + "instruments"}, 
+    cpr::Bearer{this->access_token_},
     req_params);
 
   if (r.status_code != 200) throw ApiException(r.status_code);
@@ -280,8 +280,8 @@ markets_hours AmeritradeSession::get_market_hours(vector<market_type> markets, s
   };
 
   cpr::Response r = cpr::Get(
-    cpr::Url{_root_url + "marketdata/hours"}, 
-    cpr::Bearer{this->_access_token},
+    cpr::Url{root_url_ + "marketdata/hours"}, 
+    cpr::Bearer{this->access_token_},
     req_params);
 
   if (r.status_code != 200) throw ApiException(r.status_code);
