@@ -39,9 +39,9 @@ const char* search_type_str(search_type e) noexcept
 {
   switch (e)
   {
-    case search_type::INSTRUMENT_SYMBOL_SEARCH: return "symbol-search";
-    case search_type::INSTRUMENT_SYMBOL_REGEX: return "symbol-regex";
-    case search_type::INSTRUMENT_DESC_SEARCH: return "desc-search";
-    case search_type::INSTRUMENT_DESC_REGEX: return "desc-regex";
+    case search_type::INSTRUMENT_SYMBOL_SEARCH:   return "symbol-search";
+    case search_type::INSTRUMENT_SYMBOL_REGEX:    return "symbol-regex";
+    case search_type::INSTRUMENT_DESC_SEARCH:     return "desc-search";
+    case search_type::INSTRUMENT_DESC_REGEX:      return "desc-regex";
   }
 }

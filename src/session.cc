@@ -33,7 +33,10 @@ int ApiException::get_code() { return status_code; }
  * @param a consumer_key generated from the TDAmeritrade Developer portal
  * @param a root_url to make an API request (useful for /v1/ or /v2/ in future)
  */
-AmeritradeSession::AmeritradeSession(string refresh, string consumer_key, string root_url) 
+AmeritradeSession::AmeritradeSession(
+    string refresh, 
+    string consumer_key, 
+    string root_url) 
   : refresh(refresh),
     consumer_key(consumer_key),
     root_url(root_url) {
@@ -82,7 +85,9 @@ void AmeritradeSession::init_access_token() {
     {"redirect_uri", "http://127.0.0.1"}
   };
 
-  cpr::Response r = cpr::Post(cpr::Url{root_url + "oauth2/token"}, req_payload);
+  cpr::Response r = cpr::Post(
+      cpr::Url{root_url + "oauth2/token"}, 
+      req_payload);
 
   if (r.status_code != 200) 
     throw ApiException(r.status_code);
@@ -238,7 +243,10 @@ markets_hours AmeritradeSession::get_market_hours(vector<market_type> markets, s
 
   // capitalize all the markets for parameters
   for (auto& market_str : markets_str)
-    transform(market_str.begin(), market_str.end(), market_str.begin(), ::toupper);
+    transform(
+      market_str.begin(), 
+      market_str.end(), market_str.begin(), 
+      ::toupper);
 
   // implode the vector of strings with a comma
   string ss = "";
