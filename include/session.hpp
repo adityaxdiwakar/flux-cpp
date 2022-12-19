@@ -32,7 +32,7 @@ class AmeritradeSession {
     instrument get_fundamentals(std::string);
 
     // market hours
-    hours_rsp_type get_market_hours(std::string, std::string);
+    markets_hours get_market_hours(std::vector<market_type>, std::string);
 };
 
 /**

@@ -60,24 +60,39 @@ void to_json(nlohmann::json& j, const market_hours& mh) {
   };
 }
 
-void from_json(const nlohmann::json& j, singled_hours_rsp_t& s) {
+void from_json(const nlohmann::json& j, unordered_map<string, market_hours>& s) {
   for (auto& entry: j.items())
     s[entry.key()] = entry.value().get<market_hours>();
 }
 
-void to_json(nlohmann::json& j, const singled_hours_rsp_t& s) {
+void to_json(nlohmann::json& j, const unordered_map<string, market_hours>& s) {
   for (const pair<string, market_hours>& si : s)
     j[si.first] = si.second;
 }
 
-void from_json(const nlohmann::json& j, hours_rsp_type& s) {
-  for (auto& entry: j.items())
-    s[get_market_type(entry.key())] = entry.value().get<singled_hours_rsp_t>();
+void from_json(const nlohmann::json& j, markets_hours& s) {
+  if (j.count("equity")) 
+    s.equity = j.at("equity").get<unordered_map<string, market_hours>>();
+
+  if (j.count("option")) 
+    s.option = j.at("option").get<unordered_map<string, market_hours>>();
+
+  if (j.count("future")) 
+    s.future = j.at("future").get<unordered_map<string, market_hours>>();
+
+  if (j.count("forex")) 
+    s.forex = j.at("forex").get<unordered_map<string, market_hours>>();
+
+  if (j.count("bond")) 
+    s.bond = j.at("bond").get<unordered_map<string, market_hours>>();
 }
 
-void to_json(nlohmann::json& j, const hours_rsp_type& s) {
-  for (const pair<market_type, singled_hours_rsp_t>& si : s) 
-    j[get_str(si.first)] = si.second;
+void to_json(nlohmann::json& j, const markets_hours& s) {
+  if (s.bond    != nullopt)   j["bond"]   = s.bond.value();
+  if (s.future  != nullopt)   j["future"] = s.future.value();
+  if (s.forex   != nullopt)   j["forex"]  = s.forex.value();
+  if (s.option  != nullopt)   j["option"] = s.option.value();
+  if (s.equity  != nullopt)   j["equity"] = s.equity.value();
 }
 
 const char* get_str(market_type t) {
