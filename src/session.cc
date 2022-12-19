@@ -1,4 +1,5 @@
 #include <string>
+#include <chrono>
 #include <iostream>
 #include <sys/stat.h>
 #include <fstream>
@@ -101,6 +102,8 @@ ostream& operator<<(ostream &os, const AmeritradeSession& s) {
  */
 void AmeritradeSession::init_access_token_() {
   if (this->token_file_ != nullopt && this->read_saved_token_()) {
+    cout << "read in access token from file" << endl;
+    cout << this->access_token_ << endl;
     return;
   }
 
@@ -137,10 +140,18 @@ bool AmeritradeSession::read_saved_token_() {
   if (this->token_file_ == nullopt) return false;
 
   struct stat sb;
-  if (stat(this->token_file_.value().c_str(), &sb) == 0) {
+  if (stat(this->token_file_.value().c_str(), &sb) != 0) {
     // file does not exist, create it
     ofstream(this->token_file_.value());
   }
+
+  // check that the file is not more than 30 minutes old since edit
+  using clock = chrono::system_clock;
+  const auto mod_time = clock::from_time_t(sb.st_mtime);
+  const auto now = clock::now();
+
+  // cannot use saved token as it has expired
+  if (now - mod_time > chrono::minutes(25)) return false;
 
   // create file stream, open it to the file, read it, and set access token
   ifstream f;
@@ -149,6 +160,7 @@ bool AmeritradeSession::read_saved_token_() {
 
   stringstream rd_stream;
   rd_stream << f.rdbuf();
+  f.close();
 
   this->access_token_ = rd_stream.str();
   return true;
@@ -170,7 +182,9 @@ void AmeritradeSession::write_access_token_() {
   ofstream f;
   f.open(this->token_file_.value());
   if (!f.is_open()) return;
+  cout << "writing access token " << this->access_token_ << endl;
   f << this->access_token_;
+  f.close();
 }
 
 /**
