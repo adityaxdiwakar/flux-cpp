@@ -3,6 +3,7 @@
 #include "cpr/cpr.h"
 #include "quotes.hpp"
 #include "instruments.hpp"
+#include "markethours.hpp"
 #pragma once
 
 class AmeritradeSession {
@@ -29,6 +30,9 @@ class AmeritradeSession {
     // search methods
     std::unordered_map<std::string, instrument> search_instrument(std::string, search_type);
     instrument get_fundamentals(std::string);
+
+    // market hours
+    markets_hours get_market_hours(std::vector<market_type>, std::string);
 };
 
 /**
