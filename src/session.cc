@@ -1,6 +1,8 @@
 #include <string>
+#include <chrono>
 #include <iostream>
-#include <format>
+#include <sys/stat.h>
+#include <fstream>
 
 #include "session.hpp"
 #include "auth.hpp"
@@ -37,11 +39,32 @@ AmeritradeSession::AmeritradeSession(
     string refresh, 
     string consumer_key, 
     string root_url) 
-  : refresh(refresh),
-    consumer_key(consumer_key),
-    root_url(root_url) {
+  : refresh_(refresh),
+    consumer_key_(consumer_key),
+    root_url_(root_url) {
 
-  init_access_token();
+  this->init_access_token_();
+}
+
+/**
+ * Construct an AmeritradeSession with an access token stat file.
+ *
+ * @param a refresh token to generate access tokens
+ * @param a consumer_key generated from the TDAmeritrade Developer portal
+ * @param a root_url to make an API request (useful for /v1/ or /v2/ in future)
+ * @param an access token file to save generated tokens in and read from
+ */
+AmeritradeSession::AmeritradeSession(
+    string refresh, 
+    string consumer_key, 
+    string root_url,
+    string token_file) 
+  : refresh_(refresh),
+    consumer_key_(consumer_key),
+    root_url_(root_url),
+    token_file_(token_file) {
+
+  this->init_access_token_();
 }
 
 /**
@@ -52,9 +75,9 @@ AmeritradeSession::AmeritradeSession(
  */
 void to_json(nlohmann::json& j, const AmeritradeSession& s) {
   j = {
-    {"refresh", s.refresh},
-    {"consumer_key", s.consumer_key},
-    {"root_url", s.root_url}
+    {"refresh", s.refresh_},
+    {"consumer_key", s.consumer_key_},
+    {"root_url", s.root_url_}
   };
 }
 
@@ -77,16 +100,22 @@ ostream& operator<<(ostream &os, const AmeritradeSession& s) {
  * session field. TODO: This function only initializes or regenerates
  * a token if the token has expired.
  */
-void AmeritradeSession::init_access_token() {
-  auto req_payload = cpr::Payload{
+void AmeritradeSession::init_access_token_() {
+  if (this->token_file_ != nullopt && this->read_saved_token_()) {
+    cout << "read in access token from file" << endl;
+    cout << this->access_token_ << endl;
+    return;
+  }
+
+  cpr::Payload req_payload = {
     {"grant_type", gt_refresh_token},
-    {"refresh_token", refresh},
-    {"client_id", consumer_key + "@AMER.OAUTHMAP"},
+    {"refresh_token", refresh_},
+    {"client_id", consumer_key_ + "@AMER.OAUTHMAP"},
     {"redirect_uri", "http://127.0.0.1"}
   };
 
   cpr::Response r = cpr::Post(
-      cpr::Url{root_url + "oauth2/token"}, 
+      cpr::Url{root_url_ + "oauth2/token"}, 
       req_payload);
 
   if (r.status_code != 200) 
@@ -95,7 +124,67 @@ void AmeritradeSession::init_access_token() {
   nlohmann::json j = nlohmann::json::parse(r.text);
   auto access_rsp = j.get<oauth_rsp>();
 
-  this->access_token = access_rsp.access_token;
+  this->access_token_ = access_rsp.access_token;
+
+  if (this->token_file_ != nullopt)
+    this->write_access_token_();
+}
+
+/**
+ * Read saved access token from file.
+ *
+ * @return true if token could be read, otherwise false
+ */
+bool AmeritradeSession::read_saved_token_() {
+  // santiy check this function is not called before checking token_file_
+  if (this->token_file_ == nullopt) return false;
+
+  struct stat sb;
+  if (stat(this->token_file_.value().c_str(), &sb) != 0) {
+    // file does not exist, create it
+    ofstream(this->token_file_.value());
+  }
+
+  // check that the file is not more than 30 minutes old since edit
+  using clock = chrono::system_clock;
+  const auto mod_time = clock::from_time_t(sb.st_mtime);
+  const auto now = clock::now();
+
+  // cannot use saved token as it has expired
+  if (now - mod_time > chrono::minutes(25)) return false;
+
+  // create file stream, open it to the file, read it, and set access token
+  ifstream f;
+  f.open(this->token_file_.value());
+  if (!f.is_open()) return false;
+
+  stringstream rd_stream;
+  rd_stream << f.rdbuf();
+  f.close();
+
+  this->access_token_ = rd_stream.str();
+  return true;
+}
+
+/**
+ * Write newly generated access token to a file.
+ */
+void AmeritradeSession::write_access_token_() {
+  // santiy check this function is not called before checking token_file_
+  if (this->token_file_ == nullopt) return;
+
+  struct stat sb;
+  if (stat(this->token_file_.value().c_str(), &sb) == 0) {
+    // file does not exist, create it
+    ofstream(this->token_file_.value());
+  }
+
+  ofstream f;
+  f.open(this->token_file_.value());
+  if (!f.is_open()) return;
+  cout << "writing access token " << this->access_token_ << endl;
+  f << this->access_token_;
+  f.close();
 }
 
 /**
@@ -109,8 +198,8 @@ void AmeritradeSession::init_access_token() {
  * @return a valid TDAmeritrade API access token
  */
 string AmeritradeSession::get_access_token() {
-  init_access_token();
-  return access_token;
+  init_access_token_();
+  return access_token_;
 }
 
 /**
@@ -137,8 +226,8 @@ unordered_map<string, quoted_instrument> AmeritradeSession::quote_securities(ini
   };
 
   cpr::Response r = cpr::Get(
-    cpr::Url{root_url + "marketdata/quotes"}, 
-    cpr::Bearer{this->access_token},
+    cpr::Url{root_url_ + "marketdata/quotes"}, 
+    cpr::Bearer{this->access_token_},
     req_params);
 
   if (r.status_code != 200) throw ApiException(r.status_code);
@@ -178,14 +267,14 @@ quoted_instrument AmeritradeSession::quote_security(string security) {
  * @return a mapping from tickers to searched instruments (without fundamentals)
  */
 unordered_map<string, instrument> AmeritradeSession::search_instrument(string query, search_type type) {
-  auto req_params = cpr::Parameters{
+  cpr::Parameters req_params = {
     {"symbol", query},
     {"projection", search_type_str(type)},
   };
 
   cpr::Response r = cpr::Get(
-    cpr::Url{root_url + "instruments"}, 
-    cpr::Bearer{this->access_token},
+    cpr::Url{root_url_ + "instruments"}, 
+    cpr::Bearer{this->access_token_},
     req_params);
 
   if (r.status_code != 200) throw ApiException(r.status_code);
@@ -206,14 +295,14 @@ unordered_map<string, instrument> AmeritradeSession::search_instrument(string qu
 instrument AmeritradeSession::get_fundamentals(string ticker) {
   transform(ticker.begin(), ticker.end(), ticker.begin(), ::toupper);
 
-  auto req_params = cpr::Parameters{
+  cpr::Parameters req_params = {
     {"symbol", ticker},
     {"projection", "fundamental"}
   };
 
   cpr::Response r = cpr::Get(
-    cpr::Url{root_url + "instruments"}, 
-    cpr::Bearer{this->access_token},
+    cpr::Url{root_url_ + "instruments"}, 
+    cpr::Bearer{this->access_token_},
     req_params);
 
   if (r.status_code != 200) throw ApiException(r.status_code);
@@ -256,14 +345,14 @@ markets_hours AmeritradeSession::get_market_hours(vector<market_type> markets, s
   }
   ss.pop_back();
 
-  auto req_params = cpr::Parameters{
+  cpr::Parameters req_params = {
     {"markets", ss},
     {"date", date}
   };
 
   cpr::Response r = cpr::Get(
-    cpr::Url{root_url + "marketdata/hours"}, 
-    cpr::Bearer{this->access_token},
+    cpr::Url{root_url_ + "marketdata/hours"}, 
+    cpr::Bearer{this->access_token_},
     req_params);
 
   if (r.status_code != 200) throw ApiException(r.status_code);

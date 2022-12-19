@@ -8,15 +8,20 @@
 
 class AmeritradeSession {
   private:
-    std::string refresh;
-    std::string consumer_key;
-    std::string root_url;
-    std::string access_token;
-    void init_access_token();
+    std::string refresh_;
+    std::string consumer_key_;
+    std::string root_url_;
+    std::string access_token_;
+    std::optional<std::string> token_file_;
+    void init_access_token_();
+    void write_access_token_();
+    bool read_saved_token_();
 
   public:
     AmeritradeSession(std::string, std::string, std::string);
-    AmeritradeSession();
+    AmeritradeSession(std::string, std::string, std::string, std::string);
+
+    // friend methods for overloading operations (json cast, streaming)
     friend std::ostream& operator<<(std::ostream&, const  AmeritradeSession&);
     friend void to_json(nlohmann::json&, const AmeritradeSession&);
 
