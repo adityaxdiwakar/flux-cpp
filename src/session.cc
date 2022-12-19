@@ -1,6 +1,7 @@
 #include <string>
 #include <iostream>
-#include <format>
+#include <sys/stat.h>
+#include <fstream>
 
 #include "session.hpp"
 #include "auth.hpp"
@@ -56,10 +57,13 @@ AmeritradeSession::AmeritradeSession(
     string refresh, 
     string consumer_key, 
     string root_url,
-    string access_token) 
-  : access_token_(access_token) {
+    string token_file) 
+  : refresh_(refresh),
+    consumer_key_(consumer_key),
+    root_url_(root_url),
+    token_file_(token_file) {
 
-  AmeritradeSession(refresh, consumer_key, root_url);
+  this->init_access_token_();
 }
 
 /**
@@ -96,6 +100,10 @@ ostream& operator<<(ostream &os, const AmeritradeSession& s) {
  * a token if the token has expired.
  */
 void AmeritradeSession::init_access_token_() {
+  if (this->token_file_ != nullopt && this->read_saved_token_()) {
+    return;
+  }
+
   cpr::Payload req_payload = {
     {"grant_type", gt_refresh_token},
     {"refresh_token", refresh_},
@@ -114,6 +122,55 @@ void AmeritradeSession::init_access_token_() {
   auto access_rsp = j.get<oauth_rsp>();
 
   this->access_token_ = access_rsp.access_token;
+
+  if (this->token_file_ != nullopt)
+    this->write_access_token_();
+}
+
+/**
+ * Read saved access token from file.
+ *
+ * @return true if token could be read, otherwise false
+ */
+bool AmeritradeSession::read_saved_token_() {
+  // santiy check this function is not called before checking token_file_
+  if (this->token_file_ == nullopt) return false;
+
+  struct stat sb;
+  if (stat(this->token_file_.value().c_str(), &sb) == 0) {
+    // file does not exist, create it
+    ofstream(this->token_file_.value());
+  }
+
+  // create file stream, open it to the file, read it, and set access token
+  ifstream f;
+  f.open(this->token_file_.value());
+  if (!f.is_open()) return false;
+
+  stringstream rd_stream;
+  rd_stream << f.rdbuf();
+
+  this->access_token_ = rd_stream.str();
+  return true;
+}
+
+/**
+ * Write newly generated access token to a file.
+ */
+void AmeritradeSession::write_access_token_() {
+  // santiy check this function is not called before checking token_file_
+  if (this->token_file_ == nullopt) return;
+
+  struct stat sb;
+  if (stat(this->token_file_.value().c_str(), &sb) == 0) {
+    // file does not exist, create it
+    ofstream(this->token_file_.value());
+  }
+
+  ofstream f;
+  f.open(this->token_file_.value());
+  if (!f.is_open()) return;
+  f << this->access_token_;
 }
 
 /**

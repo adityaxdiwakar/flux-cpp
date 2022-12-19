@@ -14,6 +14,8 @@ class AmeritradeSession {
     std::string access_token_;
     std::optional<std::string> token_file_;
     void init_access_token_();
+    void write_access_token_();
+    bool read_saved_token_();
 
   public:
     AmeritradeSession(std::string, std::string, std::string);
