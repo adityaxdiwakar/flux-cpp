@@ -53,7 +53,7 @@ void from_json(const nlohmann::json& j, fundamentals& f) {
 }
 
 void to_json(nlohmann::json& j, const fundamentals& f) {
-  j = nlohmann::json{
+  j = {
     {"symbol", f.symbol},
     {"high52", f.high52},
     {"low52", f.low52},

@@ -56,7 +56,7 @@ void from_json(const nlohmann::json& j, quoted_instrument& q) {
 }
 
 void to_json(nlohmann::json& j, const quoted_instrument& q) {
-  j = nlohmann::json{
+  j = {
     {"asset_type", q.asset_type},
     {"asset_main_type", q.asset_main_type},
     {"cusip", q.cusip},
@@ -110,7 +110,7 @@ void to_json(nlohmann::json& j, const quoted_instrument& q) {
 
 void to_json(nlohmann::json& j, const unordered_map<string, quoted_instrument>& q) {
   for (const pair<string, quoted_instrument>& qi : q)
-    j[qi.first] = (nlohmann::json) qi.second;
+    j[qi.first] = qi.second;
 }
 
 void from_json(const nlohmann::json& j, unordered_map<string, quoted_instrument>& q) {

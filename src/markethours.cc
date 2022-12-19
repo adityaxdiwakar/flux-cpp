@@ -5,7 +5,7 @@
 using namespace std;
 
 void to_json(nlohmann::json& j, const market_times& sh) {
-  j = nlohmann::json{
+  j = {
     {"start", sh.start},
     {"end", sh.end}
   };
@@ -48,7 +48,7 @@ void from_json(const nlohmann::json& j, market_hours& mh) {
 }
 
 void to_json(nlohmann::json& j, const market_hours& mh) {
-  j = nlohmann::json{
+  j = {
     {"date", mh.date},
     {"market_type", mh.market_type},
     {"exchange", mh.exchange},

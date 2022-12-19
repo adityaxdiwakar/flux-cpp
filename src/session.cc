@@ -48,7 +48,7 @@ AmeritradeSession::AmeritradeSession(string refresh, string consumer_key, string
  * @param a constant (immutable) AmeritradeSession reference to JSON represent
  */
 void to_json(nlohmann::json& j, const AmeritradeSession& s) {
-  j = nlohmann::json {
+  j = {
     {"refresh", s.refresh},
     {"consumer_key", s.consumer_key},
     {"root_url", s.root_url}
