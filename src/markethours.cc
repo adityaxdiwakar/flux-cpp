@@ -71,31 +71,13 @@ void to_json(nlohmann::json& j, const singled_hours_rsp_t& s) {
 }
 
 void from_json(const nlohmann::json& j, hours_rsp_type& s) {
-  for (auto& entry: j.items()) {
-    market_type label;
-    if (entry.key() == "equity")      label = market_type::MARKET_EQUITY;
-    else if (entry.key() == "future") label = market_type::MARKET_FUTURE;
-    else if (entry.key() == "option") label = market_type::MARKET_OPTION;
-    else if (entry.key() == "bond")   label = market_type::MARKET_BOND;
-    else if (entry.key() == "forex")  label = market_type::MARKET_FOREX;
-
-    s[label] = entry.value().get<singled_hours_rsp_t>();
-  }
+  for (auto& entry: j.items())
+    s[get_market_type(entry.key())] = entry.value().get<singled_hours_rsp_t>();
 }
 
 void to_json(nlohmann::json& j, const hours_rsp_type& s) {
-  for (const pair<market_type, singled_hours_rsp_t>& si : s) {
-    const char* label;
-    switch (si.first) {
-      case market_type::MARKET_EQUITY:  label = "equity";   break;
-      case market_type::MARKET_FUTURE:  label = "future";   break;
-      case market_type::MARKET_FOREX:   label = "forex";    break;
-      case market_type::MARKET_OPTION:  label = "option";   break;
-      case market_type::MARKET_BOND:    label = "bond";     break;
-    }
-
-    j[label] = si.second;
-  }
+  for (const pair<market_type, singled_hours_rsp_t>& si : s) 
+    j[get_str(si.first)] = si.second;
 }
 
 const char* get_str(market_type t) {
@@ -108,7 +90,7 @@ const char* get_str(market_type t) {
   }
 }
 
-const market_type get_market_type(std::string s) {
+const market_type get_market_type(string s) {
   if (s == "equity")        return market_type::MARKET_EQUITY;
   else if (s == "bond")     return market_type::MARKET_BOND;
   else if (s == "forex")    return market_type::MARKET_FOREX;
