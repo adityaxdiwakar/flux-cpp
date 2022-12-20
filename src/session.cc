@@ -5,6 +5,7 @@
 #include <fstream>
 
 #include "session.hpp"
+#include "chains.hpp"
 #include "auth.hpp"
 #include "quotes.hpp"
 #include "movers.hpp"
@@ -102,11 +103,7 @@ ostream& operator<<(ostream &os, const AmeritradeSession& s) {
  * a token if the token has expired.
  */
 void AmeritradeSession::init_access_token_() {
-  if (this->token_file_ != nullopt && this->read_saved_token_()) {
-    cout << "read in access token from file" << endl;
-    cout << this->access_token_ << endl;
-    return;
-  }
+  if (this->token_file_ != nullopt && this->read_saved_token_()) return;
 
   cpr::Payload req_payload = {
     {"grant_type", gt_refresh_token},
@@ -387,4 +384,72 @@ vector<mover> AmeritradeSession::get_movers(enum index i, enum direction d, enum
 
   nlohmann::json j = nlohmann::json::parse(r.text);
   return j.get<vector<mover>>();
+}
+
+/**
+ * Return an option chain.
+ */
+chain AmeritradeSession::get_options(string symbol, options_req request) {
+  transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
+
+  cpr::Parameters req_params = {
+    {"symbol", symbol},
+  };
+
+  if (request.contract != nullopt)
+    req_params.Add({"contractType", contract_str(request.contract.value())});
+
+  if (request.num_strikes != nullopt)
+    req_params.Add({"strikeCount", to_string(request.num_strikes.value())});
+
+  if (request.include_quotes != nullopt) 
+    req_params.Add({"includeQuotes", request.num_strikes.value() ? "TRUE" : "FALSE"});
+
+  if (request.strat != nullopt)
+    req_params.Add({"strategy", strategy_str(request.strat.value())});
+
+  if (request.strike_interval != nullopt)
+    req_params.Add({"interval", to_string(request.strike_interval.value())});
+
+  if (request.strike_price != nullopt)
+    req_params.Add({"strike", to_string(request.strike_price.value())});
+
+  if (request.strike_filter != nullopt)
+    req_params.Add({"range", strike_str(request.strike_filter.value())});
+
+  if (request.from_date != nullopt)
+    req_params.Add({"fromDate", request.from_date.value()});
+
+  if (request.to_date != nullopt)
+    req_params.Add({"toDate", request.to_date.value()});
+
+  if (request.analytical_query != nullopt) {
+    if (request.analytical_query.value().vol != nullopt)
+      req_params.Add({"volatility", to_string(request.analytical_query.value().vol.value())});
+
+    if (request.analytical_query.value().underlying_price != nullopt)
+      req_params.Add({"underlyingPrice", to_string(request.analytical_query.value().underlying_price.value())});
+
+    if (request.analytical_query.value().interest_rate != nullopt)
+      req_params.Add({"interestRate", to_string(request.analytical_query.value().interest_rate.value())});
+
+    if (request.analytical_query.value().exp_days != nullopt)
+      req_params.Add({"daysToExpiration", to_string(request.analytical_query.value().exp_days.value())});
+  }
+
+  if (request.exp_month != nullopt)
+    req_params.Add({"expMonth", months_str(request.exp_month.value())});
+
+  if (request.option_type != nullopt)
+    req_params.Add({"optionType", norm_opt_str(request.option_type.value())});
+
+  cpr::Response r = cpr::Get(
+    cpr::Url{root_url_ + "marketdata/chains"},
+    cpr::Bearer{this->access_token_},
+    req_params);
+
+  if (r.status_code != 200) throw ApiException(r.status_code);
+
+  nlohmann::json j = nlohmann::json::parse(r.text);
+  return j.get<chain>();
 }
