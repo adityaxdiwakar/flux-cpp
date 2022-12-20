@@ -256,13 +256,13 @@ void to_json(nlohmann::json& j, const leg_option& o) {
 
 void from_json(const nlohmann::json& j, leg_option& o) {
 	j.at("symbol").get_to(o.symbol);
-	j.at("put_call_ind").get_to(o.put_call_ind);
+	j.at("putCallInd").get_to(o.put_call_ind);
 	j.at("description").get_to(o.description);
 	j.at("bid").get_to(o.bid);
 	j.at("ask").get_to(o.ask);
 	j.at("range").get_to(o.range);
-	j.at("strike_price").get_to(o.strike_price);
-	j.at("total_volume").get_to(o.total_volume);
+	j.at("strikePrice").get_to(o.strike_price);
+	j.at("totalVolume").get_to(o.total_volume);
 }
 
 void to_json(nlohmann::json& j, const chain& c) {
@@ -278,11 +278,12 @@ void to_json(nlohmann::json& j, const chain& c) {
 		{"volatility", c.volatility},
 		{"days_to_expiration", c.days_to_expiration},
 		{"number_of_contracts", c.number_of_contracts},
-		{"put_cal", c.put_cal},
-		{"call_cal", c.call_cal}
 	};
 
   if (c.underlying != nullopt) j["underlying"] = c.underlying.value();
+  if (c.put_cal != nullopt) j["put_cal"] = c.put_cal.value();
+  if (c.call_cal != nullopt) j["call_cal"] = c.call_cal.value();
+  if (c.month_lists != nullopt) j["month_lists"] = c.month_lists.value();
 }
 
 void from_json(const nlohmann::json& j, chain& c) {
@@ -290,18 +291,25 @@ void from_json(const nlohmann::json& j, chain& c) {
 	j.at("status").get_to(c.status);
 	j.at("strategy").get_to(c.strategy);
 	j.at("interval").get_to(c.interval);
-	j.at("is_delayed").get_to(c.is_delayed);
-	j.at("is_index").get_to(c.is_index);
-	j.at("interest_rate").get_to(c.interest_rate);
-	j.at("underlying_price").get_to(c.underlying_price);
+	j.at("isDelayed").get_to(c.is_delayed);
+	j.at("isIndex").get_to(c.is_index);
+	j.at("interestRate").get_to(c.interest_rate);
+	j.at("underlyingPrice").get_to(c.underlying_price);
 	j.at("volatility").get_to(c.volatility);
-	j.at("days_to_expiration").get_to(c.days_to_expiration);
-	j.at("number_of_contracts").get_to(c.number_of_contracts);
-	j.at("put_cal").get_to(c.put_cal);
-	j.at("call_cal").get_to(c.call_cal);
+	j.at("daysToExpiration").get_to(c.days_to_expiration);
+	j.at("numberOfContracts").get_to(c.number_of_contracts);
 
   if (j.count("underlying"))
     c.underlying = j.at("underlying").get<underlying_quote>();
+
+  if (j.count("monthlyStrategyList"))
+    c.month_lists = j.at("monthlyStrategyList").get<list_of_months>();
+
+  if (j.count("putExpDateMap"))
+    c.put_cal = j.at("putExpDateMap").get<option_calendar>();
+
+  if (j.count("callExpDateMap"))
+    c.call_cal = j.at("callExpDateMap").get<option_calendar>();
 }
 
 void to_json(nlohmann::json& j, const option_strat& o) {
@@ -317,9 +325,9 @@ void to_json(nlohmann::json& j, const option_strat& o) {
 
 void from_json(const nlohmann::json& j, option_strat& o) {
   j.at("primary").get_to(o.primary);
-  j.at("strategy_strike").get_to(o.strategy_strike);
-  j.at("strategy_bid").get_to(o.strategy_bid);
-  j.at("strategy_ask").get_to(o.strategy_ask);
+  j.at("strategyStrike").get_to(o.strategy_strike);
+  j.at("strategyBid").get_to(o.strategy_bid);
+  j.at("strategyAsk").get_to(o.strategy_ask);
 
   if (j.count("secondary")) 
     o.secondary = j.at("secondary").get<leg_option>();

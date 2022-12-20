@@ -207,9 +207,9 @@ struct chain {
 	int64_t volatility;
 	int64_t days_to_expiration;
 	int64_t number_of_contracts;
-	option_calendar put_cal;
-	option_calendar call_cal;
-  list_of_months month_lists;
+  std::optional<option_calendar> put_cal;
+  std::optional<option_calendar> call_cal;
+  std::optional<list_of_months> month_lists;
 
 	friend void to_json(nlohmann::json&, const chain&);
 	friend void from_json(const nlohmann::json&, chain&);
