@@ -103,11 +103,7 @@ ostream& operator<<(ostream &os, const AmeritradeSession& s) {
  * a token if the token has expired.
  */
 void AmeritradeSession::init_access_token_() {
-  if (this->token_file_ != nullopt && this->read_saved_token_()) {
-    cout << "read in access token from file" << endl;
-    cout << this->access_token_ << endl;
-    return;
-  }
+  if (this->token_file_ != nullopt && this->read_saved_token_()) return;
 
   cpr::Payload req_payload = {
     {"grant_type", gt_refresh_token},

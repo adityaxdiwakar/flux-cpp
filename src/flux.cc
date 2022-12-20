@@ -19,12 +19,8 @@ int main() {
     "https://api.tdameritrade.com/v1/",
     "token.dat");
 
-  auto movers_spx = session.get_movers(
-    index::SPX, 
-    direction::UP, 
-    change_metric::PERCENT);
-
-  auto aapl_chain = session.get_options("AAPL", {.num_strikes = 2});
+  auto aapl_chain = session.get_options("AAPL", 
+    {.num_strikes = 1, .exp_month = month::December});
 
   cout << (nlohmann::json) aapl_chain << endl;
   return 0;

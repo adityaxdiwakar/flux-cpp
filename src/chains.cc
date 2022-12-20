@@ -299,7 +299,7 @@ void from_json(const nlohmann::json& j, chain& c) {
 	j.at("daysToExpiration").get_to(c.days_to_expiration);
 	j.at("numberOfContracts").get_to(c.number_of_contracts);
 
-  if (j.count("underlying"))
+  if (j.count("underlying") && !j.at("underlying").is_null())
     c.underlying = j.at("underlying").get<underlying_quote>();
 
   if (j.count("monthlyStrategyList"))
