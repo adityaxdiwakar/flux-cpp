@@ -99,8 +99,7 @@ ostream& operator<<(ostream &os, const AmeritradeSession& s) {
  * Dynamically initialize access token.
  *
  * This function initializes the access token and stores it as a private 
- * session field. TODO: This function only initializes or regenerates
- * a token if the token has expired.
+ * session field. 
  */
 void AmeritradeSession::init_access_token_() {
   if (this->token_file_ != nullopt && this->read_saved_token_()) return;
