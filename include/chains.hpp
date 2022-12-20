@@ -35,17 +35,18 @@ enum class norm_opt {
 };
 
 struct analytical_query {
-  double strat_vol;
-  double strat_underlying_price;
-  double strat_interest_rate;
-  int strat_exp_days;
+  std::optional<double> vol;
+  std::optional<double> underlying_price;
+  std::optional<double> interest_rate;
+  std::optional<int> exp_days;
 };
 
 struct options_req {
-  std::optional<contract> c;
+  std::optional<contract> contract;
   std::optional<int> num_strikes;
   std::optional<bool> include_quotes;
   std::optional<strategy> strat;
+  std::optional<int> strike_price;
   std::optional<int> strike_interval;
   std::optional<strike> strike_filter;
   std::optional<std::string> from_date;
@@ -57,7 +58,7 @@ struct options_req {
 
 const char* months_str(month) noexcept;
 const char* strike_str(strike) noexcept;
-const char* strategy_str(strike) noexcept;
+const char* strategy_str(strategy) noexcept;
 const char* contract_str(contract) noexcept;
 const char* norm_opt_str(norm_opt) noexcept;
 
