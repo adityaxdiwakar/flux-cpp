@@ -27,6 +27,8 @@ enum class contract {
 enum class month { 
   January, February, March, April, May, June, July, August, September,
   October, November, December };
+void to_json(nlohmann::json&, const month&);
+void from_json(const nlohmann::json&, month&);
 
 enum class norm_opt {
   S, NS, ALL
@@ -146,7 +148,7 @@ struct underlying_quote {
 
 struct leg_option {
 	std::string symbol;
-	std::string put_call_ind;
+	contract put_call_ind;
 	std::string description;
 	int64_t bid;
 	double ask;
@@ -158,14 +160,44 @@ struct leg_option {
 	friend void from_json(const nlohmann::json&, leg_option&);
 };
 
+struct option_strat {
+	leg_option primary;
+  std::optional<leg_option> secondary;
+	std::string strategy_strike;
+	double strategy_bid;
+	double strategy_ask;
+
+	friend void to_json(nlohmann::json&, const option_strat&);
+	friend void from_json(const nlohmann::json&, option_strat&);
+};
+
+struct monthly_strat_list {
+	enum month month;
+	int64_t year;
+	int64_t day;
+	int64_t days_to_exp;
+	enum month secondary_month;
+	int64_t secondary_year;
+	int64_t secondary_day;
+	int64_t secondary_days_to_exp;
+	contract type;
+	contract secondary_type;
+	std::vector<option_strat> strat_list;
+
+	friend void to_json(nlohmann::json&, const monthly_strat_list&);
+	friend void from_json(const nlohmann::json&, monthly_strat_list&);
+};
+
 using strike_options = std::vector<exp_map>;
 using strike_ladder = std::unordered_map<std::string, strike_options>;
 using option_calendar = std::unordered_map<std::string, strike_ladder>;
 
+using list_of_months = std::vector<monthly_strat_list>;
+
 struct chain {
 	std::string symbol;
 	std::string status;
-	std::string underlying;
+  std::optional<underlying_quote> underlying;
 	std::string strategy;
 	int64_t interval;
 	bool is_delayed;
@@ -177,6 +209,7 @@ struct chain {
 	int64_t number_of_contracts;
 	option_calendar put_cal;
 	option_calendar call_cal;
+  list_of_months month_lists;
 
 	friend void to_json(nlohmann::json&, const chain&);
 	friend void from_json(const nlohmann::json&, chain&);

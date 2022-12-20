@@ -1,5 +1,7 @@
 #include "chains.hpp"
 
+using namespace std;
+
 const char *months_str(enum month m) noexcept {
   switch (m) {
     case month::January:    return "JAN";
@@ -13,7 +15,7 @@ const char *months_str(enum month m) noexcept {
     case month::September:  return "SEP";
     case month::October:    return "OCT";
     case month::November:   return "NOV";
-    case month::December:   return "DEV";
+    case month::December:   return "DEC";
   };
 }
 
@@ -74,6 +76,15 @@ void from_json(const nlohmann::json& j, expiration_type& e) {
   if      (j == "Q")  e = expiration_type::Q;
   else if (j == "R")  e = expiration_type::R;
   else if (j == "S")  e = expiration_type::S;
+}
+
+void to_json(nlohmann::json& j, const contract &c) {
+  j = contract_str(c);
+}
+
+void from_json(const nlohmann::json& j, contract &c) {
+  if      (j == "C" || j == "CALL")   c = contract::CALL;
+  else if (j == "P" || j == "PUT")    c = contract::PUT;
 }
 
 void to_json(nlohmann::json& j, const exp_map& e) {
@@ -258,7 +269,6 @@ void to_json(nlohmann::json& j, const chain& c) {
 	j = {
 		{"symbol", c.symbol},
 		{"status", c.status},
-		{"underlying", c.underlying},
 		{"strategy", c.strategy},
 		{"interval", c.interval},
 		{"is_delayed", c.is_delayed},
@@ -271,12 +281,13 @@ void to_json(nlohmann::json& j, const chain& c) {
 		{"put_cal", c.put_cal},
 		{"call_cal", c.call_cal}
 	};
+
+  if (c.underlying != nullopt) j["underlying"] = c.underlying.value();
 }
 
 void from_json(const nlohmann::json& j, chain& c) {
 	j.at("symbol").get_to(c.symbol);
 	j.at("status").get_to(c.status);
-	j.at("underlying").get_to(c.underlying);
 	j.at("strategy").get_to(c.strategy);
 	j.at("interval").get_to(c.interval);
 	j.at("is_delayed").get_to(c.is_delayed);
@@ -288,4 +299,80 @@ void from_json(const nlohmann::json& j, chain& c) {
 	j.at("number_of_contracts").get_to(c.number_of_contracts);
 	j.at("put_cal").get_to(c.put_cal);
 	j.at("call_cal").get_to(c.call_cal);
+
+  if (j.count("underlying"))
+    c.underlying = j.at("underlying").get<underlying_quote>();
+}
+
+void to_json(nlohmann::json& j, const option_strat& o) {
+  j = {
+    {"primary", o.primary},
+    {"strategy_strike", o.strategy_strike},
+    {"strategy_bid", o.strategy_bid},
+    {"strategy_ask", o.strategy_ask},
+  };
+
+  if (o.secondary != nullopt) j["secondary"] = o.secondary.value();
+}
+
+void from_json(const nlohmann::json& j, option_strat& o) {
+  j.at("primary").get_to(o.primary);
+  j.at("strategy_strike").get_to(o.strategy_strike);
+  j.at("strategy_bid").get_to(o.strategy_bid);
+  j.at("strategy_ask").get_to(o.strategy_ask);
+
+  if (j.count("secondary")) 
+    o.secondary = j.at("secondary").get<leg_option>();
+}
+
+void to_json(nlohmann::json& j, const month& m) {
+	j = months_str(m);
+}
+
+void from_json(const nlohmann::json& j, month& m) {
+	if      (j == "Jan")  m = month::January;
+	else if (j == "Feb")  m = month::February;
+	else if (j == "Mar")  m = month::March;
+	else if (j == "Apr")  m = month::April;
+	else if (j == "May")  m = month::May;
+	else if (j == "Jun") 	m = month::June;
+	else if (j == "Jul")	m = month::July;
+	else if (j == "Aug")	m = month::August;
+	else if (j == "Sep")	m = month::September;
+	else if (j == "Oct")	m = month::October;
+	else if (j == "Nov")	m = month::November;
+	else if (j == "Dec")	m = month::December;
+}
+
+void to_json(nlohmann::json& j, const monthly_strat_list& msl) {
+  j = {
+    {"month", msl.month},
+    {"year", msl.year},
+    {"day", msl.day},
+    {"days_to_exp", msl.days_to_exp},
+    {"secondary_month", msl.secondary_month},
+    {"secondary_year", msl.secondary_year},
+    {"secondary_day", msl.secondary_day},
+    {"secondary_days_to_exp", msl.secondary_days_to_exp},
+    {"type", msl.type},
+    {"secondary_type", msl.secondary_type},
+    {"strat_list", msl.strat_list},
+  };
+}
+
+void from_json(const nlohmann::json& j, monthly_strat_list& msl) {
+  j.at("year").get_to(msl.year);
+  j.at("month").get_to(msl.month);
+  j.at("day").get_to(msl.day);
+  j.at("daysToExp").get_to(msl.days_to_exp);
+
+  j.at("secondaryYear").get_to(msl.secondary_year);
+  j.at("secondaryMonth").get_to(msl.secondary_month);
+  j.at("secondaryDay").get_to(msl.secondary_day);
+  j.at("secondaryDaysToExp").get_to(msl.secondary_days_to_exp);
+
+  j.at("type").get_to(msl.type);
+  j.at("secondaryType").get_to(msl.secondary_type);
+
+  j.at("optionStrategyList").get_to(msl.strat_list);
 }
