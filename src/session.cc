@@ -5,6 +5,7 @@
 #include <fstream>
 
 #include "session.hpp"
+#include "chains.hpp"
 #include "auth.hpp"
 #include "quotes.hpp"
 #include "movers.hpp"
@@ -388,3 +389,10 @@ vector<mover> AmeritradeSession::get_movers(enum index i, enum direction d, enum
   nlohmann::json j = nlohmann::json::parse(r.text);
   return j.get<vector<mover>>();
 }
+
+/**
+ * Return an option chain.
+ */
+void AmeritradeSession::get_options(
+  string symbol,
+  options_req request) {}

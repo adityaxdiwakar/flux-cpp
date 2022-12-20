@@ -12,6 +12,7 @@ set(CPP_FILES
     src/fundamentals.cc
     src/markethours.cc
     src/movers.cc
+    src/chains.cc
 )
 
 set(HEADER_FILES,
@@ -21,6 +22,7 @@ set(HEADER_FILES,
     include/instruments.hpp
     include/markethours.hpp
     include/movers.hpp
+    include/chains.hpp
 )
 
 add_executable(fluxcpp ${CPP_FILES} ${HEADER_FILES})

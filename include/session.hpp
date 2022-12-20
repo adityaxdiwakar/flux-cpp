@@ -4,6 +4,7 @@
 #include "quotes.hpp"
 #include "instruments.hpp"
 #include "markethours.hpp"
+#include "chains.hpp"
 #include "movers.hpp"
 #pragma once
 
@@ -42,6 +43,9 @@ class AmeritradeSession {
     
     // movers method
     std::vector<mover> get_movers(enum index, enum direction, enum change_metric);
+
+    // options chain method
+    void get_options(std::string, options_req);
 };
 
 /**
