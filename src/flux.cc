@@ -24,6 +24,8 @@ int main() {
     direction::UP, 
     change_metric::PERCENT);
 
-  cout << (nlohmann::json) movers_spx << endl;
+  auto aapl_chain = session.get_options("AAPL", {.num_strikes = 2});
+
+  cout << (nlohmann::json) aapl_chain << endl;
   return 0;
 }

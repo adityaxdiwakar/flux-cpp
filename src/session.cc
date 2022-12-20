@@ -393,7 +393,7 @@ vector<mover> AmeritradeSession::get_movers(enum index i, enum direction d, enum
 /**
  * Return an option chain.
  */
-void AmeritradeSession::get_options(string symbol, options_req& request) {
+chain AmeritradeSession::get_options(string symbol, options_req request) {
   transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
 
   cpr::Parameters req_params = {
@@ -446,4 +446,14 @@ void AmeritradeSession::get_options(string symbol, options_req& request) {
 
   if (request.option_type != nullopt)
     req_params.Add({"optionType", norm_opt_str(request.option_type.value())});
+
+  cpr::Response r = cpr::Get(
+    cpr::Url{root_url_ + "marketdata/chains"},
+    cpr::Bearer{this->access_token_},
+    req_params);
+
+  if (r.status_code != 200) throw ApiException(r.status_code);
+
+  nlohmann::json j = nlohmann::json::parse(r.text);
+  return j.get<chain>();
 }
