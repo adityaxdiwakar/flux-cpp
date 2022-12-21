@@ -45,7 +45,8 @@ class AmeritradeSession {
     std::vector<mover> get_movers(enum index, enum direction, enum change_metric);
 
     // options chain method
-    chain get_options(std::string, options_req);
+    chain get_options(std::string, std::optional<options_req>);
+    chain get_options(std::string);
 };
 
 /**

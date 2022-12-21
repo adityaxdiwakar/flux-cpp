@@ -388,59 +388,64 @@ vector<mover> AmeritradeSession::get_movers(enum index i, enum direction d, enum
 /**
  * Return an option chain.
  */
-chain AmeritradeSession::get_options(string symbol, options_req request) {
+chain AmeritradeSession::get_options(string symbol, optional<options_req> request_opt) {
   transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
 
   cpr::Parameters req_params = {
     {"symbol", symbol},
   };
 
-  if (request.contract != nullopt)
-    req_params.Add({"contractType", contract_str(request.contract.value())});
+  if (request_opt != nullopt) {
+    auto request = request_opt.value();
 
-  if (request.num_strikes != nullopt)
-    req_params.Add({"strikeCount", to_string(request.num_strikes.value())});
+    if (request.contract != nullopt)
+      req_params.Add({"contractType", contract_str(request.contract.value())});
 
-  if (request.include_quotes != nullopt) 
-    req_params.Add({"includeQuotes", request.num_strikes.value() ? "TRUE" : "FALSE"});
+    if (request.num_strikes != nullopt)
+      req_params.Add({"strikeCount", to_string(request.num_strikes.value())});
 
-  if (request.strat != nullopt)
-    req_params.Add({"strategy", strategy_str(request.strat.value())});
+    if (request.include_quotes != nullopt) 
+      req_params.Add({"includeQuotes", request.num_strikes.value() ? "TRUE" : "FALSE"});
 
-  if (request.strike_interval != nullopt)
-    req_params.Add({"interval", to_string(request.strike_interval.value())});
+    if (request.strat != nullopt)
+      req_params.Add({"strategy", strategy_str(request.strat.value())});
 
-  if (request.strike_price != nullopt)
-    req_params.Add({"strike", to_string(request.strike_price.value())});
+    if (request.strike_interval != nullopt)
+      req_params.Add({"interval", to_string(request.strike_interval.value())});
 
-  if (request.strike_filter != nullopt)
-    req_params.Add({"range", strike_str(request.strike_filter.value())});
+    if (request.strike_price != nullopt)
+      req_params.Add({"strike", to_string(request.strike_price.value())});
 
-  if (request.from_date != nullopt)
-    req_params.Add({"fromDate", request.from_date.value()});
+    if (request.strike_filter != nullopt)
+      req_params.Add({"range", strike_str(request.strike_filter.value())});
 
-  if (request.to_date != nullopt)
-    req_params.Add({"toDate", request.to_date.value()});
+    if (request.from_date != nullopt)
+      req_params.Add({"fromDate", request.from_date.value()});
 
-  if (request.analytical_query != nullopt) {
-    if (request.analytical_query.value().vol != nullopt)
-      req_params.Add({"volatility", to_string(request.analytical_query.value().vol.value())});
+    if (request.to_date != nullopt)
+      req_params.Add({"toDate", request.to_date.value()});
 
-    if (request.analytical_query.value().underlying_price != nullopt)
-      req_params.Add({"underlyingPrice", to_string(request.analytical_query.value().underlying_price.value())});
+    if (request.analytical_query != nullopt) {
+      if (request.analytical_query.value().vol != nullopt)
+        req_params.Add({"volatility", to_string(request.analytical_query.value().vol.value())});
 
-    if (request.analytical_query.value().interest_rate != nullopt)
-      req_params.Add({"interestRate", to_string(request.analytical_query.value().interest_rate.value())});
+      if (request.analytical_query.value().underlying_price != nullopt)
+        req_params.Add({"underlyingPrice", to_string(request.analytical_query.value().underlying_price.value())});
 
-    if (request.analytical_query.value().exp_days != nullopt)
-      req_params.Add({"daysToExpiration", to_string(request.analytical_query.value().exp_days.value())});
+      if (request.analytical_query.value().interest_rate != nullopt)
+        req_params.Add({"interestRate", to_string(request.analytical_query.value().interest_rate.value())});
+
+      if (request.analytical_query.value().exp_days != nullopt)
+        req_params.Add({"daysToExpiration", to_string(request.analytical_query.value().exp_days.value())});
+    }
+
+    if (request.exp_month != nullopt)
+      req_params.Add({"expMonth", months_str(request.exp_month.value())});
+
+    if (request.option_type != nullopt)
+      req_params.Add({"optionType", norm_opt_str(request.option_type.value())});
   }
 
-  if (request.exp_month != nullopt)
-    req_params.Add({"expMonth", months_str(request.exp_month.value())});
-
-  if (request.option_type != nullopt)
-    req_params.Add({"optionType", norm_opt_str(request.option_type.value())});
 
   cpr::Response r = cpr::Get(
     cpr::Url{root_url_ + "marketdata/chains"},
@@ -451,4 +456,8 @@ chain AmeritradeSession::get_options(string symbol, options_req request) {
 
   nlohmann::json j = nlohmann::json::parse(r.text);
   return j.get<chain>();
+}
+
+chain AmeritradeSession::get_options(string symbol) {
+  return this->get_options(symbol, nullopt);
 }
