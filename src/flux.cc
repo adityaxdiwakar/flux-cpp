@@ -19,8 +19,9 @@ int main() {
     "https://api.tdameritrade.com/v1/",
     "token.dat");
 
-  auto aapl_chain = session.get_options("AAPL", 
-    {.num_strikes = 1, .exp_month = month::December});
+  auto aapl_chain = session.get_options("AAPL", options_req{
+    .num_strikes = 12
+  });
 
   cout << (nlohmann::json) aapl_chain << endl;
   return 0;
