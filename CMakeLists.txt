@@ -13,7 +13,7 @@ set(CPP_FILES
     src/markethours.cc
     src/movers.cc
     src/chains.cc
-)
+    src/history.cc)
 
 set(HEADER_FILES,
     include/session.hpp
@@ -23,7 +23,7 @@ set(HEADER_FILES,
     include/markethours.hpp
     include/movers.hpp
     include/chains.hpp
-)
+    include/history.hpp)
 
 add_executable(fluxcpp ${CPP_FILES} ${HEADER_FILES})
 target_include_directories(fluxcpp PRIVATE include/)
