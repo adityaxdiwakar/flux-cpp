@@ -19,10 +19,8 @@ int main() {
     "https://api.tdameritrade.com/v1/",
     "token.dat");
 
-  auto aapl_chain = session.get_options("AAPL", options_req{
-    .num_strikes = 12
-  });
+  auto candles = session.get_historical("AAPL", historical::period::Day(1), historical::frequency::Minute(60));
 
-  cout << (nlohmann::json) aapl_chain << endl;
+  cout << (nlohmann::json) candles << endl;
   return 0;
 }
