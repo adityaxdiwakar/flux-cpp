@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <vector>
 #include "nlohmann/json.hpp"
@@ -53,9 +55,9 @@ namespace historical {
   }
 
   namespace frequency {
-    using Minute = internal::ParameterizedTime<internal::DAY>;
-    using Daily = internal::ParameterizedTime<internal::MONTH>;
-    using Weekly = internal::ParameterizedTime<internal::YEAR>;
-    using Monthly = internal::ParameterizedTime<internal::YTD>;
+    using Minute = internal::ParameterizedTime<internal::MINUTE>;
+    using Daily = internal::ParameterizedTime<internal::DAILY>;
+    using Weekly = internal::ParameterizedTime<internal::WEEKLY>;
+    using Monthly = internal::ParameterizedTime<internal::MONTHLY>;
   }
 };
