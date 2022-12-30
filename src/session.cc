@@ -10,6 +10,7 @@
 #include "quotes.hpp"
 #include "movers.hpp"
 #include "instruments.hpp"
+#include "history.hpp"
 
 #include "cpr/cpr.h"
 #include "nlohmann/json.hpp"
@@ -460,4 +461,7 @@ chain AmeritradeSession::get_options(string symbol, optional<options_req> reques
 
 chain AmeritradeSession::get_options(string symbol) {
   return this->get_options(symbol, nullopt);
+}
+
+historical::candle_list AmeritradeSession::get_historical(string symbol) {
 }

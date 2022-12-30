@@ -6,6 +6,7 @@
 #include "markethours.hpp"
 #include "chains.hpp"
 #include "movers.hpp"
+#include "history.hpp"
 #pragma once
 
 class AmeritradeSession {
@@ -47,6 +48,10 @@ class AmeritradeSession {
     // options chain method
     chain get_options(std::string, std::optional<options_req>);
     chain get_options(std::string);
+    
+    // historical price method
+    template<historical::internal::times T, historical::internal::times U>
+    historical::candle_list get_historical(std::string, T, U, int64_t start, int64_t end, bool extended);
 };
 
 /**
