@@ -20,6 +20,14 @@ class AmeritradeSession {
     void write_access_token_();
     bool read_saved_token_();
 
+    // historical price method 
+    template<historical::internal::times T, historical::internal::times U>
+    std::vector<historical::candle> get_historical(std::string,
+        std::optional<historical::internal::ParameterizedTime<T>>,
+        historical::internal::ParameterizedTime<U>, 
+        std::optional<int64_t> start, std::optional<int64_t> end,
+        bool extended);
+
   public:
     AmeritradeSession(std::string, std::string, std::string);
     AmeritradeSession(std::string, std::string, std::string, std::string);
@@ -49,9 +57,36 @@ class AmeritradeSession {
     chain get_options(std::string, std::optional<options_req>);
     chain get_options(std::string);
     
-    // historical price method
+    // historical price method 
     template<historical::internal::times T, historical::internal::times U>
-    historical::candle_list get_historical(std::string, T, U, int64_t start, int64_t end, bool extended);
+    std::vector<historical::candle> get_historical(std::string symbol,
+        historical::internal::ParameterizedTime<T> period,
+        historical::internal::ParameterizedTime<U> frequency, 
+        bool extended) {
+      return this->get_historical(symbol, std::make_optional(period), frequency, std::nullopt, std::nullopt, extended);
+    }
+
+    template<historical::internal::times U>
+    std::vector<historical::candle> get_historical(std::string symbol,
+        historical::internal::ParameterizedTime<U> frequency, 
+        int64_t start, int64_t end,
+        bool extended) {
+      return this->get_historical(symbol, std::nullopt, frequency, start, end, extended);
+    }
+
+    template<historical::internal::times T, historical::internal::times U>
+    std::vector<historical::candle> get_historical(std::string symbol,
+        historical::internal::ParameterizedTime<T> period,
+        historical::internal::ParameterizedTime<U> frequency) {
+      return this->get_historical(symbol, std::make_optional(period), frequency, std::nullopt, std::nullopt, false);
+    }
+
+    template<historical::internal::times U>
+    std::vector<historical::candle> get_historical(std::string symbol,
+        historical::internal::ParameterizedTime<U> frequency,
+        int64_t start, int64_t end) {
+      return this->get_historical(symbol, std::nullopt, frequency, start, end, false);
+    }
 };
 
 /**
