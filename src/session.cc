@@ -5,12 +5,12 @@
 #include <fstream>
 
 #include "session.hpp"
+#include "history.hpp"
 #include "chains.hpp"
 #include "auth.hpp"
 #include "quotes.hpp"
 #include "movers.hpp"
 #include "instruments.hpp"
-#include "history.hpp"
 
 #include "cpr/cpr.h"
 #include "nlohmann/json.hpp"
@@ -139,8 +139,8 @@ bool AmeritradeSession::read_saved_token_() {
 
   struct stat sb;
   if (stat(this->token_file_.value().c_str(), &sb) != 0) {
-    // file does not exist, create it
-    ofstream(this->token_file_.value());
+    // file does not exist, we cannot read anything saved
+    return false;
   }
 
   // check that the file is not more than 30 minutes old since edit
@@ -463,5 +463,91 @@ chain AmeritradeSession::get_options(string symbol) {
   return this->get_options(symbol, nullopt);
 }
 
-historical::candle_list AmeritradeSession::get_historical(string symbol) {
+/**
+ * Get historical price of security.
+ *
+ * @param the symbol to get historical price for
+ * @param parameterized period
+ * @param parameterized frequency
+ * @param start date for pricing to start (in ms since epoch)
+ * @param end date for pricing to end (in ms since epoch)
+ * @return a list of candles with the symbol included
+ */
+template<historical::internal::times T, historical::internal::times U>
+vector<historical::candle> AmeritradeSession::get_historical(std::string symbol,
+    optional<historical::internal::ParameterizedTime<T>> period,
+    historical::internal::ParameterizedTime<U> frequency, 
+    optional<int64_t> start, optional<int64_t> end,
+    bool extended) {
+
+  transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
+
+  cpr::Parameters req_params = {
+    {"frequencyType", frequency.to_type()},
+    {"frequency", to_string(frequency.to_num())},
+  };
+
+  if (period != nullopt) {
+    req_params.Add({"periodType", period.value().to_type()});
+    req_params.Add({"period", to_string(period.value().to_num())});
+  }
+
+  if (start != nullopt)
+    req_params.Add({"startDate", to_string(start.value())});
+
+  if (end != nullopt)
+    req_params.Add({"endDate", to_string(end.value())});
+
+  if (extended)
+    req_params.Add({"nextExtendedHoursData", extended ? "true" : "false"});
+
+  cpr::Response r = cpr::Get(
+    cpr::Url{root_url_ + "marketdata/" + symbol + "/pricehistory"},
+    cpr::Bearer{this->access_token_},
+    req_params);
+
+  if (r.status_code != 200) throw ApiException(r.status_code);
+
+  nlohmann::json j = nlohmann::json::parse(r.text);
+  return j.get<historical::candle_list>().candles;
 }
+
+// period::Day
+// frequency::Minute
+template vector<historical::candle> AmeritradeSession::get_historical(std::string,
+    optional<historical::period::Day>, historical::frequency::Minute,
+    optional<int64_t>, optional<int64_t>, bool);
+
+// period::Month
+// frequency::Daily
+template vector<historical::candle> AmeritradeSession::get_historical(std::string,
+    optional<historical::period::Month>, historical::frequency::Daily,
+    optional<int64_t>, optional<int64_t>, bool);
+// frequency::Weekly
+template vector<historical::candle> AmeritradeSession::get_historical(std::string,
+    optional<historical::period::Month>, historical::frequency::Weekly,
+    optional<int64_t>, optional<int64_t>, bool);
+
+// period::Year
+// frequency::Daily
+template vector<historical::candle> AmeritradeSession::get_historical(std::string,
+    optional<historical::period::Year>, historical::frequency::Daily,
+    optional<int64_t>, optional<int64_t>, bool);
+// frequency::Weekly
+template vector<historical::candle> AmeritradeSession::get_historical(std::string,
+    optional<historical::period::Year>, historical::frequency::Weekly,
+    optional<int64_t>, optional<int64_t>, bool);
+// frequency::Monthly
+template vector<historical::candle> AmeritradeSession::get_historical(std::string,
+    optional<historical::period::Year>, historical::frequency::Monthly,
+    optional<int64_t>, optional<int64_t>, bool);
+
+// period::Ytd
+// frequency::Daily
+template vector<historical::candle> AmeritradeSession::get_historical(std::string,
+    optional<historical::period::Ytd>, historical::frequency::Daily,
+    optional<int64_t>, optional<int64_t>, bool);
+// frequency::Weekly
+template vector<historical::candle> AmeritradeSession::get_historical(std::string,
+    optional<historical::period::Ytd>, historical::frequency::Weekly,
+    optional<int64_t>, optional<int64_t>, bool);
