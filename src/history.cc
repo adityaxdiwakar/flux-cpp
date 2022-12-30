@@ -34,21 +34,36 @@ namespace historical {
     };
   }
 
-  template<internal::times T>
-  internal::ParameterizedTime<T>::ParameterizedTime(int period) : period_(period) {}
+  namespace internal {
+    template<times T>
+    ParameterizedTime<T>::ParameterizedTime(int period) : period_(period) {}
 
-  template<internal::times T>
-  int internal::ParameterizedTime<T>::to_num() {
-    return this ->period_;
-  }
+    template<times T>
+    int ParameterizedTime<T>::to_num() {
+      return this ->period_;
+    }
 
-  template<internal::times T>
-  const char* internal::ParameterizedTime<T>::to_type() noexcept {
-    switch (T) {
-      case internal::DAY: return "day";
-      case internal::MONTH: return "month";
-      case internal::YTD: return "ytd";
-      case internal::YEAR: return "year";
-    };
-  }
+    template<times T>
+    const char* ParameterizedTime<T>::to_type() noexcept {
+      switch (T) {
+        case DAY: return "day";
+        case MONTH: return "month";
+        case YTD: return "ytd";
+        case YEAR: return "year";
+        case MINUTE: return "minute";
+        case DAILY: return "daily";
+        case WEEKLY: return "weekly";
+        case MONTHLY: return "monthly";
+      };
+    }
+
+    template class ParameterizedTime<DAY>;
+    template class ParameterizedTime<MONTH>;
+    template class ParameterizedTime<YTD>;
+    template class ParameterizedTime<YEAR>;
+    template class ParameterizedTime<MINUTE>;
+    template class ParameterizedTime<DAILY>;
+    template class ParameterizedTime<WEEKLY>;
+    template class ParameterizedTime<MONTHLY>;
+  };
 };
