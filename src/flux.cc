@@ -13,13 +13,16 @@ int main() {
     return -1;
   }
 
-  auto session = AmeritradeSession(
+  auto session = flux::AmeritradeSession(
     getenv("REFRESH_TOKEN"), 
     getenv("CONSUMER_KEY"), 
     "https://api.tdameritrade.com/v1/",
     "token.dat");
 
-  auto candles = session.get_historical("AAPL", historical::period::Day(1), historical::frequency::Minute(60));
+  auto candles = session.get_historical(
+      "AAPL", 
+      flux::historical::period::Day(1), 
+      flux::historical::frequency::Minute(60));
 
   cout << (nlohmann::json) candles << endl;
   return 0;
