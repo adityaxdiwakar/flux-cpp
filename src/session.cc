@@ -400,52 +400,32 @@ namespace flux {
     if (request_opt != nullopt) {
       auto request = request_opt.value();
 
-      if (request.contract != nullopt)
-        req_params.Add({"contractType", contract_str(request.contract.value())});
-
-      if (request.num_strikes != nullopt)
-        req_params.Add({"strikeCount", to_string(request.num_strikes.value())});
-
-      if (request.include_quotes != nullopt) 
-        req_params.Add({"includeQuotes", request.num_strikes.value() ? "TRUE" : "FALSE"});
-
-      if (request.strat != nullopt)
-        req_params.Add({"strategy", strategy_str(request.strat.value())});
-
-      if (request.strike_interval != nullopt)
-        req_params.Add({"interval", to_string(request.strike_interval.value())});
-
-      if (request.strike_price != nullopt)
-        req_params.Add({"strike", to_string(request.strike_price.value())});
-
-      if (request.strike_filter != nullopt)
-        req_params.Add({"range", strike_str(request.strike_filter.value())});
-
-      if (request.from_date != nullopt)
-        req_params.Add({"fromDate", request.from_date.value()});
-
-      if (request.to_date != nullopt)
-        req_params.Add({"toDate", request.to_date.value()});
+      auto ident = []<typename T>(T x) { return x; };
+      auto local_str = []<typename T>(T x) { return to_string(x); };
+      auto add_param_if = [&req_params](auto& opt, const std::string& key, auto transform) {
+        if (opt) req_params.Add({key, transform(opt.value())});
+      };
+      
+      add_param_if(request.contract, "contractType", chains::contract_str);
+      add_param_if(request.num_strikes, "strikeCount", local_str);
+      add_param_if(request.include_quotes, "includeQuotes", [](bool value) { return value ? "TRUE" : "FALSE"; });
+      add_param_if(request.strat, "strategy", chains::strategy_str);
+      add_param_if(request.strike_interval, "interval", local_str);
+      add_param_if(request.strike_price, "strike", local_str);
+      add_param_if(request.strike_filter, "range", chains::strike_str);
+      add_param_if(request.from_date, "fromDate", ident);
+      add_param_if(request.to_date, "toDate", ident);
 
       if (request.analytical_query != nullopt) {
-        if (request.analytical_query.value().vol != nullopt)
-          req_params.Add({"volatility", to_string(request.analytical_query.value().vol.value())});
-
-        if (request.analytical_query.value().underlying_price != nullopt)
-          req_params.Add({"underlyingPrice", to_string(request.analytical_query.value().underlying_price.value())});
-
-        if (request.analytical_query.value().interest_rate != nullopt)
-          req_params.Add({"interestRate", to_string(request.analytical_query.value().interest_rate.value())});
-
-        if (request.analytical_query.value().exp_days != nullopt)
-          req_params.Add({"daysToExpiration", to_string(request.analytical_query.value().exp_days.value())});
+        auto& anal_query = request.analytical_query.value();
+        add_param_if(anal_query.vol, "volatility", local_str);
+        add_param_if(anal_query.underlying_price, "underlyingPrice", local_str);
+        add_param_if(anal_query.interest_rate, "interestRate", local_str);
+        add_param_if(anal_query.exp_days, "daysToExpiration", local_str);
       }
 
-      if (request.exp_month != nullopt)
-        req_params.Add({"expMonth", months_str(request.exp_month.value())});
-
-      if (request.option_type != nullopt)
-        req_params.Add({"optionType", norm_opt_str(request.option_type.value())});
+      add_param_if(request.exp_month, "expMonth", chains::months_str);
+      add_param_if(request.option_type, "optionType", chains::norm_opt_str);
     }
 
 
